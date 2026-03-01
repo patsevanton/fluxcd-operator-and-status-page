@@ -21,6 +21,18 @@
 - Кластер Kubernetes с установленным Flux (`flux install` или [bootstrap](https://fluxcd.io/flux/installation/bootstrap/)).
 - Репозиторий зарегистрирован как источник (GitRepository) и по нему создана Kustomization.
 
+### Структура репозитория (Flux)
+
+- **[kustomization.yaml](kustomization.yaml)** — корневая сборка: подключает каталог `flux/`.
+- **`flux/`** — манифесты стека и источников:
+  - [flux/sources.yaml](flux/sources.yaml) — `HelmRepository` для чартов VictoriaMetrics;
+  - [flux/namespaces.yaml](flux/namespaces.yaml) — неймспейс `vmks`;
+  - [flux/vmks-helmrelease.yaml](flux/vmks-helmrelease.yaml) — `HelmRelease` victoria-metrics-k8s-stack;
+  - [flux/vmks-values.yaml](flux/vmks-values.yaml) — values для Helm (Kustomize собирает из него ConfigMap);
+  - [flux/kustomization.yaml](flux/kustomization.yaml) — сборка ресурсов и ConfigMap с values.
+
+Все перечисленные файлы создаются вручную и коммитятся в Git до выполнения `flux bootstrap`.
+
 ### Bootstrap (если Flux ещё не установлен)
 
 Пример для GitHub:
@@ -33,17 +45,7 @@ flux bootstrap github \
   --path=.
 ```
 
-При таком вызове Flux создаёт GitRepository и Kustomization, которые применяют манифесты из корня репозитория (см. [kustomization.yaml](kustomization.yaml)).
-
-### Структура репозитория (Flux)
-
-- **[kustomization.yaml](kustomization.yaml)** — корневая сборка: подключает каталог `flux/`.
-- **`flux/`** — манифесты стека и источников:
-  - [flux/sources.yaml](flux/sources.yaml) — `HelmRepository` для чартов VictoriaMetrics;
-  - [flux/namespaces.yaml](flux/namespaces.yaml) — неймспейс `vmks`;
-  - [flux/vmks-helmrelease.yaml](flux/vmks-helmrelease.yaml) — `HelmRelease` victoria-metrics-k8s-stack;
-  - [flux/vmks-values.yaml](flux/vmks-values.yaml) — values для Helm (Kustomize собирает из него ConfigMap);
-  - [flux/kustomization.yaml](flux/kustomization.yaml) — сборка ресурсов и ConfigMap с values.
+При таком вызове Flux создаёт в кластере только **GitRepository** и **Kustomization**; файлы в репозитории он не создаёт (их добавляют по списку выше).
 
 ### Проверка после реконсиляции
 
