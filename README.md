@@ -26,7 +26,7 @@
 
 ```bash
 flux bootstrap github \
-  --owner=YOUR_ORG \
+  --owner=patsevanton \
   --repository=fluxcd-operator-and-status-page \
   --branch=main \
   --path=.
