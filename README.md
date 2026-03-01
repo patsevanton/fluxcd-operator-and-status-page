@@ -1,6 +1,8 @@
 # Миграция FluxCD Operator и обзор FluxCD Status Page
 
-## О проекте
+## Цель проекта
+
+Цель — перевести управление кластером с «ручного» Flux на **Flux Operator**: единая точка настройки (FluxInstance), возможность использовать Mission Control и сохранить GitOps-подход. В качестве примера приложения разворачивается **victoria-metrics-k8s-stack** (мониторинг: VictoriaMetrics, Grafana, Alertmanager).
 
 В репозитории описаны два этапа:
 
@@ -9,7 +11,7 @@
 
 Инфраструктура (кластер, сеть) описана в Terraform (Yandex Cloud).
 
----
+
 
 ## Часть 1. Установка victoria-metrics-k8s-stack через обычный Flux CD
 
@@ -58,7 +60,7 @@ flux get kustomizations -A
 kubectl get secret vmks-grafana -n vmks -o jsonpath='{.data.admin-password}' | base64 --decode; echo
 ```
 
----
+
 
 ## Часть 2. Переход с Flux CD на Flux Operator
 
@@ -138,17 +140,17 @@ flux get helmreleases -A
 
 Если ранее использовался `flux bootstrap`, в Git мог появиться каталог `flux-system/` с манифестами Flux. После успешной миграции на Flux Operator эти манифесты можно удалить из репозитория — компоненты Flux теперь управляются оператором. Подробнее: [Flux Bootstrap Migration](https://fluxcd.control-plane.io/operator/flux-bootstrap-migration).
 
----
+
 
 ## Развёрнутый стек (кратко)
 
 | Компонент                 | Namespace   | Назначение                                      |
-|---------------------------|------------|--------------------------------------------------|
+|||--|
 | VictoriaMetrics K8s Stack | vmks       | VMCluster, vmalert, vmagent, Alertmanager, Grafana |
 
 Параметры (реплики, лимиты, ingress) задаются в [flux/vmks-values.yaml](flux/vmks-values.yaml). Расширенный пример values с комментариями по нагрузке — [vmks-values.yaml](vmks-values.yaml) в корне.
 
----
+
 
 ## Инфраструктура (Terraform)
 
@@ -158,7 +160,7 @@ flux get helmreleases -A
 
 После изменений: `terraform plan` / `terraform apply`. Подключение к кластеру — по команде из output (`yc managed-kubernetes cluster get-credentials ...`).
 
----
+
 
 ## Полезные команды
 
@@ -177,7 +179,7 @@ flux get helmreleases -A
   kubectl get pods -n vmks
   ```
 
----
+
 
 ## Ссылки
 
