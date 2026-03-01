@@ -11,8 +11,6 @@
 
 Инфраструктура (кластер, сеть) описана в Terraform (Yandex Cloud).
 
-
-
 ## Часть 1. Установка victoria-metrics-k8s-stack через стандартный FluxCD
 
 Сначала стек ставится стандартными средствами FluxCD: источник чартов (HelmRepository), релиз (HelmRelease), Kustomization применяет манифесты из Git.
@@ -59,8 +57,6 @@ flux get kustomizations -A
 ```bash
 kubectl get secret vmks-grafana -n vmks -o jsonpath='{.data.admin-password}' | base64 --decode; echo
 ```
-
-
 
 ## Часть 2. Переход со стандартного FluxCD на Flux Operator
 
@@ -150,8 +146,6 @@ flux get helmreleases -A
 
 Параметры (реплики, лимиты, ingress) задаются в [flux/vmks-values.yaml](flux/vmks-values.yaml). Расширенный пример values с комментариями по нагрузке — [vmks-values.yaml](vmks-values.yaml) в корне.
 
-
-
 ## Инфраструктура (Terraform)
 
 - `k8s.tf` — managed Kubernetes cluster (Yandex Cloud);
@@ -159,8 +153,6 @@ flux get helmreleases -A
 - `ip-dns.tf` — внешний IP при необходимости.
 
 После изменений: `terraform plan` / `terraform apply`. Подключение к кластеру — по команде из output (`yc managed-kubernetes cluster get-credentials ...`).
-
-
 
 ## Полезные команды
 
@@ -178,8 +170,6 @@ flux get helmreleases -A
   ```bash
   kubectl get pods -n vmks
   ```
-
-
 
 ## Ссылки
 
