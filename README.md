@@ -137,7 +137,55 @@ flux get helmreleases -A
 
 Если ранее использовался `flux bootstrap`, в Git мог появиться каталог `flux-system/` с манифестами Flux. После успешной миграции на Flux Operator эти манифесты можно удалить из репозитория — компоненты Flux теперь управляются оператором. Подробнее: [Flux Bootstrap Migration](https://fluxcd.control-plane.io/operator/flux-bootstrap-migration).
 
+## 3. Обзор FluxCD Status Page
 
+Flux Operator даёт единую картину состояния Flux в кластере: отчёт (FluxReport), события и метрики Prometheus. Это удобно для мониторинга и поиска причин сбоев.
+
+### FluxReport — единый отчёт о состоянии Flux
+
+Оператор автоматически создаёт ресурс **FluxReport** (имя `flux` в namespace `flux-system`). В отчёте отображаются:
+
+- готовность компонентов Flux (source-controller, kustomize-controller, helm-controller и др.);
+- сведения о дистрибутиве (версия, registry);
+- статистика реконсилеров;
+- статус синхронизации кластера с Git.
+
+Отчёт обновляется по расписанию (по умолчанию раз в 5 минут). Просмотр в YAML:
+
+```bash
+kubectl -n flux-system get fluxreport/flux -o yaml
+```
+
+Принудительное обновление отчёта:
+
+```bash
+kubectl -n flux-system annotate --overwrite fluxreport/flux \
+  reconcile.fluxcd.io/requestedAt="$(date +%s)"
+```
+
+Подробнее: [Flux Report API](https://fluxoperator.dev/docs/crd/fluxreport).
+
+### События FluxInstance
+
+Оператор пишет события в API сервер Kubernetes по жизненному циклу FluxInstance. Просмотр:
+
+```bash
+kubectl -n flux-system events --for fluxinstance/flux
+```
+
+Через notification-controller можно настроить уведомления (Slack, Teams, Grafana и др.) по событиям FluxInstance — см. [документацию по Alert/Provider](https://fluxoperator.dev/docs/crd/provider).
+
+### Метрики Prometheus
+
+Flux Operator отдаёт метрики в формате Prometheus на порту **8080** (Service `flux-operator`). Доступны метрики по FluxInstance, ресурсам Flux (GitRepository, Kustomization, HelmRelease и т.д.) и контроллеру. При использовании Prometheus имеет смысл уменьшить интервал отчёта до 30s:
+
+```bash
+helm upgrade flux-operator oci://ghcr.io/controlplaneio-fluxcd/charts/flux-operator \
+  --namespace flux-system \
+  --set reporting.interval=30s
+```
+
+На кластерах с Prometheus Operator можно создать ServiceMonitor для автоматического сбора метрик; в Helm-чарте оператора есть опция `serviceMonitor.create=true`. Подробнее: [Flux Monitoring and Reporting](https://fluxcd.control-plane.io/operator/monitoring).
 
 ## Развёрнутый стек (кратко)
 
@@ -180,4 +228,5 @@ flux get helmreleases -A
 - [Flux Operator — Installation](https://fluxoperator.dev/docs/guides/install/)
 - [Flux Operator — Cluster sync (GitRepository)](https://fluxoperator.dev/docs/instance/sync/)
 - [Flux Bootstrap Migration (to Flux Operator)](https://fluxcd.control-plane.io/operator/flux-bootstrap-migration)
+- [Flux Monitoring and Reporting (Status Page, FluxReport)](https://fluxcd.control-plane.io/operator/monitoring)
 - [VictoriaMetrics Helm Charts](https://github.com/VictoriaMetrics/helm-charts)
