@@ -63,6 +63,39 @@ vmcluster:
 # HA для доставки уведомлений: Alertmanager в кластерном режиме.
 # Важно для SLA alerting pipeline: падение 1 pod/ноды не должно останавливать прием алертов.
 alertmanager:
+  # Нотификации: по умолчанию blackhole; маршрут на Telegram и Mattermost (раскомментировать route.receiver/routes).
+  # Секреты (bot_token, webhook URL) — через configSecret в production.
+  config:
+    route:
+      receiver: "blackhole"
+      # Отправлять все алерты также в Telegram и Mattermost:
+      # receiver: "telegram"
+      # routes:
+      #   - receiver: mattermost
+      #     matchers: ["severity=~warning|critical"]
+      group_by: ["alertname", "cluster"]
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 4h
+    receivers:
+      - name: blackhole
+      - name: telegram
+        telegram_configs:
+          - api_url: https://api.telegram.org
+            send_resolved: true
+            # В production: создать Secret и указать alertmanager.spec.configSecret
+            bot_token: "<BOT_TOKEN>"
+            chat_id: "<CHAT_ID>"
+            parse_mode: "HTML"
+      - name: mattermost
+        slack_configs:
+          # Mattermost совместим с Slack webhook API
+          - send_resolved: true
+            # В production: использовать configSecret
+            api_url: "https://<MATTERMOST_HOST>/hooks/<WEBHOOK_ID>"
+            channel: "#alerts"
+            title: '{{ template "slack.default.title" . }}'
+            text: '{{ template "slack.default.text" . }}'
   spec:
     replicaCount: 2
     # Защищаемся от добровольных disruption'ов (drain/upgrade) так, чтобы 2 pod оставалось.
