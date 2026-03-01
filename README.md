@@ -2,20 +2,20 @@
 
 ## Цель проекта
 
-Цель — перевести управление кластером с «ручного» Flux на **Flux Operator**: единая точка настройки (FluxInstance), возможность использовать Mission Control и сохранить GitOps-подход. В качестве примера приложения разворачивается **victoria-metrics-k8s-stack** (мониторинг: VictoriaMetrics, Grafana, Alertmanager).
+Цель — перевести управление кластером со **стандартного FluxCD** на **Flux Operator**: единая точка настройки (FluxInstance), возможность использовать Mission Control и сохранить GitOps-подход. В качестве примера приложения разворачивается **victoria-metrics-k8s-stack** (мониторинг: VictoriaMetrics, Grafana, Alertmanager).
 
 В репозитории описаны два этапа:
 
-1. **Установка victoria-metrics-k8s-stack через обычный Flux CD** — классический GitOps: HelmRepository + HelmRelease.
-2. **Переход на Flux Operator** — замена «ручного» Flux на управление через [Flux Operator](https://fluxoperator.dev/) (Mission Control, единая точка управления).
+1. **Установка victoria-metrics-k8s-stack через стандартный FluxCD** — классический GitOps: HelmRepository + HelmRelease.
+2. **Переход на Flux Operator** — замена стандартного FluxCD на управление через [Flux Operator](https://fluxoperator.dev/) (Mission Control, единая точка управления).
 
 Инфраструктура (кластер, сеть) описана в Terraform (Yandex Cloud).
 
 
 
-## Часть 1. Установка victoria-metrics-k8s-stack через обычный Flux CD
+## Часть 1. Установка victoria-metrics-k8s-stack через стандартный FluxCD
 
-Сначала стек ставится стандартными средствами Flux: источник чартов (HelmRepository), релиз (HelmRelease), Kustomization применяет манифесты из Git.
+Сначала стек ставится стандартными средствами FluxCD: источник чартов (HelmRepository), релиз (HelmRelease), Kustomization применяет манифесты из Git.
 
 ### Предусловия
 
@@ -62,9 +62,9 @@ kubectl get secret vmks-grafana -n vmks -o jsonpath='{.data.admin-password}' | b
 
 
 
-## Часть 2. Переход с Flux CD на Flux Operator
+## Часть 2. Переход со стандартного FluxCD на Flux Operator
 
-После того как victoria-metrics-k8s-stack уже развёрнут через обычный Flux (часть 1), кластер можно перевести на управление через **Flux Operator**: оператор устанавливает и обновляет компоненты Flux, даёт единую точку конфигурации (FluxInstance) и при необходимости — [Mission Control](https://fluxoperator.dev/docs/) (веб-интерфейс).
+После того как victoria-metrics-k8s-stack уже развёрнут через стандартный FluxCD (часть 1), кластер можно перевести на управление через **Flux Operator**: оператор устанавливает и обновляет компоненты Flux, даёт единую точку конфигурации (FluxInstance) и при необходимости — [Mission Control](https://fluxoperator.dev/docs/) (веб-интерфейс).
 
 Манифесты приложений (в т.ч. HelmRelease для vmks) остаются в Git; меняется только то, *кто* запускает Flux и откуда берётся конфигурация (из того же репозитория).
 
