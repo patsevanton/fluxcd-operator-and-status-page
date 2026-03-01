@@ -17,20 +17,4 @@ vmsingle:
       hosts:
         - vmselect.apatsev.org.ru
 
-vmcluster:
-  enabled: false
 
-alertmanager:
-  spec:
-    replicaCount: 1
-
-vmalert:
-  spec:
-    replicaCount: 1
-
-victoria-metrics-operator:
-  resources:
-    limits:
-      memory: 512Mi
-    requests:
-      memory: 256Mi
