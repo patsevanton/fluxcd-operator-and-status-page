@@ -35,3 +35,7 @@ override.tf.json
 # Ignore CLI configuration files
 .terraformrc
 terraform.rc
+.terraform.lock.hcl
+alerts/vmrules/*
+
+alerts/__pycache__/generate_alerts.cpython-313.pyc
