@@ -23,15 +23,15 @@ resource "time_sleep" "wait_sa" {
 }
 
 # Создание Kubernetes-кластера в Yandex Cloud
-resource "yandex_kubernetes_cluster" "vmalert" {
-  name       = "vmalert"  # Имя кластера
-  network_id = yandex_vpc_network.vmalert.id  # Сеть, к которой подключается кластер
+resource "yandex_kubernetes_cluster" "fluxcd" {
+  name       = "fluxcd"  # Имя кластера
+  network_id = yandex_vpc_network.fluxcd.id  # Сеть, к которой подключается кластер
 
   master {
     version = "1.32"  # Версия Kubernetes мастера
     zonal {
-      zone      = yandex_vpc_subnet.vmalert-a.zone  # Зона размещения мастера
-      subnet_id = yandex_vpc_subnet.vmalert-a.id     # Подсеть для мастера
+      zone      = yandex_vpc_subnet.fluxcd-a.zone  # Зона размещения мастера
+      subnet_id = yandex_vpc_subnet.fluxcd-a.id     # Подсеть для мастера
     }
 
     public_ip = true  # Включение публичного IP для доступа к мастеру
@@ -51,7 +51,7 @@ resource "yandex_kubernetes_cluster" "vmalert" {
 resource "yandex_kubernetes_node_group" "k8s-node-group" {
   description = "Node group for the Managed Service for Kubernetes cluster"
   name        = "k8s-node-group"
-  cluster_id  = yandex_kubernetes_cluster.vmalert.id
+  cluster_id  = yandex_kubernetes_cluster.fluxcd.id
   version     = "1.32"  # Версия Kubernetes на нодах
 
   scale_policy {
@@ -62,9 +62,9 @@ resource "yandex_kubernetes_node_group" "k8s-node-group" {
 
   allocation_policy {
     # Распределение нод по зонам отказоустойчивости
-    location { zone = yandex_vpc_subnet.vmalert-a.zone }
-    location { zone = yandex_vpc_subnet.vmalert-b.zone }
-    location { zone = yandex_vpc_subnet.vmalert-d.zone }
+    location { zone = yandex_vpc_subnet.fluxcd-a.zone }
+    location { zone = yandex_vpc_subnet.fluxcd-b.zone }
+    location { zone = yandex_vpc_subnet.fluxcd-d.zone }
   }
 
   instance_template {
@@ -73,9 +73,9 @@ resource "yandex_kubernetes_node_group" "k8s-node-group" {
     network_interface {
       nat = true  # Включение NAT для доступа в интернет
       subnet_ids = [
-        yandex_vpc_subnet.vmalert-a.id,
-        yandex_vpc_subnet.vmalert-b.id,
-        yandex_vpc_subnet.vmalert-d.id
+        yandex_vpc_subnet.fluxcd-a.id,
+        yandex_vpc_subnet.fluxcd-b.id,
+        yandex_vpc_subnet.fluxcd-d.id
       ]
     }
 
@@ -94,8 +94,8 @@ resource "yandex_kubernetes_node_group" "k8s-node-group" {
 # Настройка провайдера Helm для установки чарта в Kubernetes
 provider "helm" {
   kubernetes = {
-    host                   = yandex_kubernetes_cluster.vmalert.master[0].external_v4_endpoint  # Адрес API Kubernetes
-    cluster_ca_certificate = yandex_kubernetes_cluster.vmalert.master[0].cluster_ca_certificate  # CA-сертификат
+    host                   = yandex_kubernetes_cluster.fluxcd.master[0].external_v4_endpoint  # Адрес API Kubernetes
+    cluster_ca_certificate = yandex_kubernetes_cluster.fluxcd.master[0].cluster_ca_certificate  # CA-сертификат
     exec = {
       api_version = "client.authentication.k8s.io/v1beta1"
       args        = ["k8s", "create-token"]  # Команда получения токена через CLI Yandex.Cloud
@@ -113,7 +113,7 @@ resource "helm_release" "ingress_nginx" {
   namespace        = "ingress-nginx"
   create_namespace = true
   depends_on       = [
-    yandex_kubernetes_cluster.vmalert,
+    yandex_kubernetes_cluster.fluxcd,
     yandex_kubernetes_node_group.k8s-node-group, 
     time_sleep.wait_sa,
     yandex_vpc_address.addr
@@ -130,5 +130,5 @@ resource "helm_release" "ingress_nginx" {
 
 # Вывод команды для получения kubeconfig
 output "k8s_cluster_credentials_command" {
-  value = "yc managed-kubernetes cluster get-credentials --id ${yandex_kubernetes_cluster.vmalert.id} --external --force"
+  value = "yc managed-kubernetes cluster get-credentials --id ${yandex_kubernetes_cluster.fluxcd.id} --external --force"
 }
