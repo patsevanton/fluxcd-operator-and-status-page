@@ -11,7 +11,7 @@
 
 Инфраструктура (кластер, сеть) описана в Terraform (Yandex Cloud).
 
-## Часть 1. Установка victoria-metrics-k8s-stack через стандартный FluxCD
+## 1. Установка victoria-metrics-k8s-stack через стандартный FluxCD
 
 Сначала стек ставится стандартными средствами FluxCD: источник чартов (HelmRepository), релиз (HelmRelease), Kustomization применяет манифесты из Git.
 
@@ -58,7 +58,7 @@ flux get kustomizations -A
 kubectl get secret vmks-grafana -n vmks -o jsonpath='{.data.admin-password}' | base64 --decode; echo
 ```
 
-## Часть 2. Переход со стандартного FluxCD на Flux Operator
+## 2. Переход со стандартного FluxCD на Flux Operator
 
 После того как victoria-metrics-k8s-stack уже развёрнут через стандартный FluxCD (часть 1), кластер можно перевести на управление через **Flux Operator**: оператор устанавливает и обновляет компоненты Flux, даёт единую точку конфигурации (FluxInstance) и при необходимости — [Mission Control](https://fluxoperator.dev/docs/) (веб-интерфейс).
 
