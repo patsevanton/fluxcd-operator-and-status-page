@@ -1,0 +1,4 @@
+# Корневая Kustomization: подключает каталог flux/ (источники, неймспейсы, HelmRelease).
+# Используется при bootstrap Flux с path=./ или path=.
+resources:
+  - flux
