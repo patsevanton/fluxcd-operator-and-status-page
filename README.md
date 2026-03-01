@@ -1,4 +1,4 @@
-# Flux CD: victoria-metrics-k8s-stack и переход на Flux Operator
+# Миграция FluxCD Operator и обзор FluxCD Status Page
 
 ## О проекте
 
