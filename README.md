@@ -1,4 +1,4 @@
-# Миграция FluxCD Operator и обзор FluxCD Status Page
+# Миграция на FluxCD Operator и обзор FluxCD Status Page
 
 ## Цель проекта
 
