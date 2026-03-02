@@ -9,8 +9,7 @@
 1. **Установка victoria-metrics-k8s-stack через классический FluxCD** — классический GitOps: HelmRepository + HelmRelease.
 2. **Переход на Flux Operator** — замена классического FluxCD на управление через [Flux Operator](https://fluxoperator.dev/) (Mission Control, единая точка управления).
 3. **Обзор FluxCD Status Page** — единый отчёт о состоянии Flux (FluxReport), события, метрики и мониторинг.
-
-Инфраструктура (кластер, сеть) описана в Terraform (Yandex Cloud).
+4. Нотификации через alertmanager.
 
 ## 1. Установка victoria-metrics-k8s-stack через классический FluxCD
 
