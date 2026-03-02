@@ -20,6 +20,6 @@ spec:
     kind: GitRepository
     url: "https://github.com/YOUR_ORG/fluxcd-operator-and-status-page.git"
     ref: "refs/heads/main"
-    path: "."
+    path: "flux"
     # Для приватного репозитория создайте secret и укажите:
     # pullSecret: "flux-system"

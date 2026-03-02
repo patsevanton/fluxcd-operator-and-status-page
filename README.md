@@ -22,8 +22,7 @@
 
 ### Структура репозитория (Flux)
 
-- **[kustomization.yaml](kustomization.yaml)** — корневая сборка: подключает каталог `flux/`.
-- **`flux/`** — манифесты стека и источников:
+- **`flux/`** — манифесты стека и источников (точка входа — `flux/kustomization.yaml`):
   - [flux/sources.yaml](flux/sources.yaml) — `HelmRepository` для чартов VictoriaMetrics;
   - [flux/namespaces.yaml](flux/namespaces.yaml) — неймспейс `vmks`;
   - [flux/vmks-helmrelease.yaml](flux/vmks-helmrelease.yaml) — `HelmRelease` victoria-metrics-k8s-stack;
@@ -41,7 +40,7 @@ flux bootstrap github \
   --owner=patsevanton \
   --repository=fluxcd-operator-and-status-page \
   --branch=main \
-  --path=.
+  --path=flux
 ```
 
 При таком вызове Flux создаёт в кластере только **GitRepository** и **Kustomization**; файлы в репозитории он не создаёт (их добавляют по списку выше).
@@ -82,7 +81,7 @@ helm install flux-operator oci://ghcr.io/controlplaneio-fluxcd/charts/flux-opera
 
 #### 2. Создать FluxInstance
 
-FluxInstance должен указывать на тот же репозиторий и путь, что и текущий bootstrap (чтобы применялся тот же `kustomization.yaml` и каталог `flux/`).
+FluxInstance должен указывать на тот же репозиторий и путь, что и текущий bootstrap (чтобы применялся тот же `flux/kustomization.yaml`).
 
 Скопируйте пример и подставьте свой URL и ветку:
 
@@ -112,7 +111,7 @@ spec:
     kind: GitRepository
     url: "https://github.com/YOUR_ORG/fluxcd-operator-and-status-page.git"
     ref: "refs/heads/main"
-    path: "."
+    path: "flux"
 ```
 
 Для приватного репозитория создайте secret в `flux-system` и укажите `spec.sync.pullSecret` (см. [документацию](https://fluxoperator.dev/docs/instance/sync/#sync-from-a-git-repository)).
