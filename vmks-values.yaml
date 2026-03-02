@@ -1,5 +1,3 @@
-# Обычная нагрузка: умеренные ресурсы, HA за счёт реплик.
-
 grafana:
   ingress:
     ingressClassName: nginx
@@ -7,8 +5,6 @@ grafana:
     hosts:
       - grafana.apatsev.org.ru
 
-# SLA 99.9 для хранилища метрик: уходим от SPOF `vmsingle` к реплицируемому `VMCluster`.
-# Это "настоящая" HA: потеря pod/ноды не равна потере сервиса и данных.
 vmsingle:
   enabled: false
 
@@ -19,12 +15,9 @@ vmcluster:
 
     vmstorage:
       replicaCount: 2
-      # Обычная нагрузка — дефолтные лимиты достаточны.
-      # resources: по умолчанию chart
 
     vmselect:
       replicaCount: 2
-      # extraArgs не задаём — дефолты подходят для обычной нагрузки.
     vminsert:
       replicaCount: 2
 
@@ -35,16 +28,10 @@ vmcluster:
       hosts:
         - vmselect.apatsev.org.ru
 
-# HA для доставки уведомлений: Alertmanager в кластерном режиме.
-# Важно для SLA alerting pipeline: падение 1 pod/ноды не должно останавливать прием алертов.
 alertmanager:
-  # Нотификации: по умолчанию blackhole; маршрут на Telegram (раскомментировать route.receiver).
-  # Секреты (bot_token) — через configSecret в production.
   config:
     route:
       receiver: "blackhole"
-      # Отправлять все алерты в Telegram:
-      # receiver: "telegram"
       group_by: ["alertname", "cluster"]
       group_wait: 30s
       group_interval: 5m
@@ -55,25 +42,16 @@ alertmanager:
         telegram_configs:
           - api_url: https://api.telegram.org
             send_resolved: true
-            # В production: создать Secret и указать alertmanager.spec.configSecret
             bot_token: "<BOT_TOKEN>"
             chat_id: "<CHAT_ID>"
             parse_mode: "HTML"
   spec:
     replicaCount: 2
-    # Защищаемся от добровольных disruption'ов (drain/upgrade) так, чтобы 2 pod оставалось.
     podDisruptionBudget:
       minAvailable: 1
-
-    # resources: по умолчанию chart (обычная нагрузка).
 
 vmalert:
   spec:
     replicaCount: 2
     podDisruptionBudget:
       minAvailable: 1
-    # resources: по умолчанию chart.
-
-# vmagent: дефолтный maxScrapeSize (16 МБ) достаточен при обычной нагрузке.
-
-# victoria-metrics-operator: дефолтные ресурсы chart.
