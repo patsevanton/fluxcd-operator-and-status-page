@@ -4,30 +4,16 @@ grafana:
     enabled: true
     hosts:
       - grafana.apatsev.org.ru
-
 vmsingle:
   enabled: false
-
 vmcluster:
   enabled: true
-  spec:
-    replicationFactor: 2
-
-    vmstorage:
-      replicaCount: 2
-
-    vmselect:
-      replicaCount: 2
-    vminsert:
-      replicaCount: 2
-
   ingress:
     select:
       enabled: true
       ingressClassName: nginx
       hosts:
         - vmselect.apatsev.org.ru
-
 alertmanager:
   config:
     route:
@@ -45,13 +31,3 @@ alertmanager:
             bot_token: "<BOT_TOKEN>"
             chat_id: "<CHAT_ID>"
             parse_mode: "HTML"
-  spec:
-    replicaCount: 2
-    podDisruptionBudget:
-      minAvailable: 1
-
-vmalert:
-  spec:
-    replicaCount: 2
-    podDisruptionBudget:
-      minAvailable: 1
