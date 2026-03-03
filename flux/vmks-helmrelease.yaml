@@ -8,6 +8,15 @@ spec:
   interval: 15m
   timeout: 10m
   targetNamespace: vmks
+  # Если HelmRelease не Ready с ошибкой "no endpoints available for service vmks-victoria-metrics-operator":
+  # validating webhook оператора вызывается до поднятия пода оператора; retries дают Flux повторить установку/апгрейд.
+  # Вручную: flux reconcile helmrelease vmks -n flux-system
+  install:
+    remediation:
+      retries: 5
+  upgrade:
+    remediation:
+      retries: 3
   chart:
     spec:
       chart: victoria-metrics-k8s-stack
