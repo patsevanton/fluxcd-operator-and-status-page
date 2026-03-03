@@ -15,7 +15,7 @@ spec:
       version: "0.71.x"
       sourceRef:
         kind: HelmRepository
-        name: vm
+        name: vmks
         namespace: flux-system
       interval: 5m
   releaseName: vmks
