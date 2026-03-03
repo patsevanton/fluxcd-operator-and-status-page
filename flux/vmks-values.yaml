@@ -1,13 +1,9 @@
-# Упрощённая конфигурация для малой/нулевой нагрузки: vmsingle, 1 реплика компонентов.
-
 grafana:
   ingress:
     ingressClassName: nginx
     enabled: true
     hosts:
       - grafana.apatsev.org.ru
-
-# Один инстанс — достаточно без нагрузки. VMCluster отключён.
 vmsingle:
   enabled: true
   ingress:
@@ -16,5 +12,3 @@ vmsingle:
       ingressClassName: nginx
       hosts:
         - vmselect.apatsev.org.ru
-
-
