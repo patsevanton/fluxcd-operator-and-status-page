@@ -17,8 +17,8 @@
 
 ### Предусловия
 
-- Кластер Kubernetes с установленным Flux ([flux install](https://fluxcd.io/flux/cmd/flux_install/) или [bootstrap](https://fluxcd.io/flux/installation/bootstrap/)).
-- Репозиторий зарегистрирован как источник (GitRepository) и по нему создана Kustomization.
+- Чистый кластер Kubernetes.
+- Бинарник FluxCD установлен локально
 
 ### Структура репозитория (Flux)
 
