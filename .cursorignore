@@ -1,0 +1,14 @@
+.cursorignore
+.git
+.gitignore
+.terraform
+.terraform.lock.hcl
+.terraform.tfstate.lock.info
+LICENSE
+ip-dns.tf
+k8s.tf
+net.tf
+terraform.tfstate
+terraform.tfstate.backup
+versions.tf
+
