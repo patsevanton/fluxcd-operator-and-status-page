@@ -60,6 +60,41 @@ flux bootstrap github \
   --path=flux
 ```
 
+Вывод примерно вот такой
+```
+Please enter your GitHub personal access token (PAT):
+► connecting to github.com
+► cloning branch "main" from Git repository "https://github.com/patsevanton/fluxcd-operator-and-status-page.git"
+✔ cloned repository
+► generating component manifests
+✔ generated component manifests
+✔ committed component manifests to "main" ("144985eeefc3ca7459adf6c5f739613b0f04cdd0")
+► pushing component manifests to "https://github.com/patsevanton/fluxcd-operator-and-status-page.git"
+► installing components in "flux-system" namespace
+✔ installed components
+✔ reconciled components
+► determining if source secret "flux-system/flux-system" exists
+► generating source secret
+► applying source secret "flux-system/flux-system"
+✔ reconciled source secret
+► generating sync manifests
+✔ generated sync manifests
+✔ committed sync manifests to "main" ("5dfb679970b8d39ac6df490b2100f6977b7df056")
+► pushing sync manifests to "https://github.com/patsevanton/fluxcd-operator-and-status-page.git"
+► applying sync manifests
+✔ reconciled sync configuration
+◎ waiting for GitRepository "flux-system/flux-system" to be reconciled
+✔ GitRepository reconciled successfully
+◎ waiting for Kustomization "flux-system/flux-system" to be reconciled
+✔ Kustomization reconciled successfully
+► confirming components are healthy
+✔ helm-controller: deployment ready
+✔ kustomize-controller: deployment ready
+✔ notification-controller: deployment ready
+✔ source-controller: deployment ready
+✔ all components are healthy
+```
+
 При таком вызове Flux устанавливает в кластере свои компоненты (контроллеры) и создаёт ресурсы **GitRepository** и **Kustomization** для синхронизации из этого репозитория. Манифесты приложения (sources, HelmRelease, kustomization.yaml и т.д.) в репозитории Flux не создаёт — их добавляют вручную по списку выше до bootstrap.
 
 ### Проверка после реконсиляции
