@@ -2,9 +2,9 @@
 
 ## Цель проекта
 
-Цель — перевести управление кластером со **классического FluxCD** на **Flux Operator**: единая точка настройки (FluxInstance), возможность использовать Mission Control и сохранить GitOps-подход. В качестве примера приложения разворачивается **victoria-metrics-k8s-stack** (мониторинг: VictoriaMetrics, Grafana, Alertmanager).
+Мигрировать управление кластером с **классического FluxCD** на **Flux Operator**: единая точка настройки через FluxInstance, использование Mission Control и сохранение GitOps. В качестве примера разворачивается стек мониторинга **victoria-metrics-k8s-stack** (VictoriaMetrics, Grafana, Alertmanager).
 
-В репозитории описаны три части:
+В репозитории описаны четыре части:
 
 1. **Установка victoria-metrics-k8s-stack через классический FluxCD** — классический GitOps: HelmRepository + HelmRelease.
 2. **Переход на Flux Operator** — замена классического FluxCD на управление через [Flux Operator](https://fluxoperator.dev/) (Mission Control, единая точка управления).
@@ -17,7 +17,7 @@
 
 ### Предусловия
 
-- Кластер Kubernetes с установленным Flux (`flux install` или [bootstrap](https://fluxcd.io/flux/installation/bootstrap/)).
+- Кластер Kubernetes с установленным Flux ([flux install](https://fluxcd.io/flux/cmd/flux_install/) или [bootstrap](https://fluxcd.io/flux/installation/bootstrap/)).
 - Репозиторий зарегистрирован как источник (GitRepository) и по нему создана Kustomization.
 
 ### Структура репозитория (Flux)
