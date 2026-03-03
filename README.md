@@ -25,9 +25,8 @@
 - **`flux/`** — манифесты стека и источников (точка входа — `flux/kustomization.yaml`):
   - [flux/sources.yaml](flux/sources.yaml) — `HelmRepository` для чартов VictoriaMetrics;
   - [flux/namespaces.yaml](flux/namespaces.yaml) — неймспейс `vmks`;
-  - [flux/vmks-helmrelease.yaml](flux/vmks-helmrelease.yaml) — `HelmRelease` victoria-metrics-k8s-stack;
-  - [flux/vmks-values.yaml](flux/vmks-values.yaml) — values для Helm (Kustomize собирает из него ConfigMap);
-  - [flux/kustomization.yaml](flux/kustomization.yaml) — сборка ресурсов и ConfigMap с values.
+  - [flux/vmks-helmrelease.yaml](flux/vmks-helmrelease.yaml) — `HelmRelease` victoria-metrics-k8s-stack (values заданы в `spec.values`);
+  - [flux/kustomization.yaml](flux/kustomization.yaml) — сборка ресурсов.
 
 Все перечисленные файлы создаются вручную и коммитятся в Git до выполнения `flux bootstrap`.
 
@@ -193,7 +192,7 @@ helm upgrade flux-operator oci://ghcr.io/controlplaneio-fluxcd/charts/flux-opera
 |||--|
 | VictoriaMetrics K8s Stack | vmks       | VMCluster, vmalert, vmagent, Alertmanager, Grafana |
 
-Параметры (реплики, лимиты, ingress) задаются в [flux/vmks-values.yaml](flux/vmks-values.yaml). Расширенный пример values с комментариями по нагрузке — [vmks-values.yaml](vmks-values.yaml) в корне.
+Параметры (реплики, лимиты, ingress) задаются в `spec.values` в [flux/vmks-helmrelease.yaml](flux/vmks-helmrelease.yaml). Расширенный пример values с комментариями по нагрузке — [vmks-values.yaml](vmks-values.yaml) в корне.
 
 ## Инфраструктура (Terraform)
 

@@ -1,26 +1,6 @@
 # Kustomization для Flux: источники, неймспейсы, ConfigMap с values, HelmReleases.
 # Применяется Flux Kustomization (указывает на этот каталог в Git).
-# namespace не задаём глобально, чтобы не ломать cluster-scoped ресурсы Namespace.
 resources:
   - namespaces.yaml
   - sources.yaml
   - vmks-helmrelease.yaml
-# Патч: только ConfigMap'ам задаём namespace flux-system.
-# Глобальный namespace в kustomization не ставим — иначе Kustomize проставит
-# metadata.namespace всем ресурсам, в т.ч. cluster-scoped (Namespace из namespaces.yaml).
-# configMapGenerator создаёт ConfigMap без namespace в default. 
-# Поэтому нужно указать namespace, чтобы ConfigMap оказался в flux-system.
-# HelmRelease в flux-system ищет vmks-values в своём namespace → ConfigMap должен быть в flux-system.
-patches:
-  - target:
-      kind: ConfigMap
-    patch: |
-      - op: add
-        path: /metadata/namespace
-        value: flux-system
-configMapGenerator:
-  - name: vmks-values
-    files:
-      - vmks-values.yaml=vmks-values.yaml
-    options:
-      disableNameSuffixHash: true

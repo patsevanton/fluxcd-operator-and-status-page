@@ -1,5 +1,4 @@
 # VictoriaMetrics K8s Stack: метрики, алерты, Grafana (VMCluster, vmalert, vmagent, Alertmanager).
-# Values из ConfigMap vmks-values (генерируется Kustomize из ../vmks-values.yaml).
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
@@ -19,8 +18,18 @@ spec:
         namespace: flux-system
       interval: 5m
   releaseName: vmks
-  valuesFrom:
-    - kind: ConfigMap
-      name: vmks-values
-      valuesKey: vmks-values.yaml
-      optional: false
+  values:
+    grafana:
+      ingress:
+        ingressClassName: nginx
+        enabled: true
+        hosts:
+          - grafana.apatsev.org.ru
+    vmsingle:
+      enabled: true
+      ingress:
+        select:
+          enabled: true
+          ingressClassName: nginx
+          hosts:
+            - vmselect.apatsev.org.ru
