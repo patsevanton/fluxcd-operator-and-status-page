@@ -30,6 +30,28 @@
 
 Все перечисленные файлы создаются вручную и коммитятся в Git до выполнения `flux bootstrap`.
 
+### GitHub Personal Access Token (PAT) для bootstrap
+
+Flux при `flux bootstrap github` запрашивает доступ к репозиторию. Токен можно передать переменной `GITHUB_TOKEN` или ввести при запросе.
+
+**Создание PAT:**
+
+1. Откройте: [GitHub → Settings → Developer settings → Personal access tokens](https://github.com/settings/tokens) (или [Fine-grained tokens](https://github.com/settings/personal-access-tokens/new)).
+2. **Classic token:** включите scope **repo** (полный доступ к репозиториям). Для существующего репо достаточно; пользователь токена должен иметь права **admin** на репозиторий.
+3. **Fine-grained token (рекомендуется):**
+   - **Repository access:** только нужный репозиторий (например `fluxcd-operator-and-status-page`).
+   - **Permissions:**
+     - **Contents** — Read and write
+     - **Metadata** — Read-only
+     - **Administration** — Read-only (если используете `--token-auth=false`, нужен Read and write).
+
+Скопируйте токен и при запросе вставьте в `Please enter your GitHub personal access token (PAT):` либо задайте перед запуском:
+
+```bash
+export GITHUB_TOKEN=ghp_xxxxxxxxxxxx
+flux bootstrap github ...
+```
+
 ### Bootstrap
 
 ```bash
