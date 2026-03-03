@@ -32,8 +32,6 @@
 
 ### Bootstrap
 
-Пример для GitHub:
-
 ```bash
 flux bootstrap github \
   --owner=patsevanton \
