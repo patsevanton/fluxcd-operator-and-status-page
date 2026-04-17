@@ -1,0 +1,44 @@
+grafana:
+  ingress:
+    ingressClassName: nginx
+    enabled: true
+    hosts:
+      - grafana.apatsev.org.ru
+vmsingle:
+  enabled: false
+vmcluster:
+  enabled: true
+  ingress:
+    select:
+      enabled: true
+      ingressClassName: nginx
+      hosts:
+        - vmselect.apatsev.org.ru
+alertmanager:
+  spec:
+    # Создайте Secret с ключами bot-token и chat-id, например:
+    #   kubectl create secret generic alertmanager-telegram-secret --from-literal=bot-token=... --from-literal=chat-id=...
+    volumes:
+      - name: telegram-secret
+        secret:
+          secretName: alertmanager-telegram-secret
+    volumeMounts:
+      - name: telegram-secret
+        mountPath: /etc/alertmanager/telegram
+        readOnly: true
+  config:
+    route:
+      receiver: "blackhole"
+      group_by: ["alertname", "cluster"]
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 4h
+    receivers:
+      - name: blackhole
+      - name: telegram
+        telegram_configs:
+          - api_url: https://api.telegram.org
+            send_resolved: true
+            bot_token_file: /etc/alertmanager/telegram/bot-token
+            chat_id_file: /etc/alertmanager/telegram/chat-id
+            parse_mode: "HTML"
