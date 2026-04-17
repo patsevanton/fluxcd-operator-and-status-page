@@ -22,7 +22,6 @@ spec:
         name: vmks
         namespace: flux-system
       interval: 15m
-      timeout: 15m
   releaseName: vmks
   values:
     grafana:
