@@ -6,6 +6,10 @@ metadata:
 spec:
   interval: 15m
   timeout: 15m
+  # disableWait: true - Flux не ждёт Ready у всех ресурсов после install/upgrade.
+  # В первую очередь из‑за первого запуска vmks: долгий cold start (CRD, операторы, StatefulSet),
+  # из‑за чего reconciler ловит таймауты, пока всё не поднимется.
+  disableWait: true
   targetNamespace: vmks
   install:
     remediation:
