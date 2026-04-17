@@ -20,13 +20,17 @@ spec:
   chart:
     spec:
       chart: victoria-metrics-k8s-stack
-      version: "0.71.x"
+      version: "0.74.1"
       sourceRef:
         kind: HelmRepository
         name: vmks
         namespace: flux-system
       interval: 5m
   releaseName: vmks
+  # Known issue on fresh install: helm-controller may fail with
+  # "no endpoints available for service vmks-victoria-metrics-operator"
+  # due to admission webhook race while operator pod is starting.
+  # Intentionally no workaround here for clean-version testing.
   values:
     grafana:
       ingress:
