@@ -5,7 +5,7 @@ metadata:
   namespace: flux-system
 spec:
   interval: 15m
-  timeout: 10m
+  timeout: 15m
   targetNamespace: vmks
   install:
     remediation:
@@ -21,7 +21,8 @@ spec:
         kind: HelmRepository
         name: vmks
         namespace: flux-system
-      interval: 5m
+      interval: 15m
+      timeout: 15m
   releaseName: vmks
   values:
     grafana:
