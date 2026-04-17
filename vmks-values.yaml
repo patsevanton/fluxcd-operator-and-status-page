@@ -1,5 +1,3 @@
-# Минимум поверх дефолтов чарта: только ingress для Grafana.
-# Без vmcluster и без кастомного Alertmanager с внешними Secret.
 grafana:
   ingress:
     ingressClassName: nginx
