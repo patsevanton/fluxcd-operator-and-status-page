@@ -70,7 +70,7 @@ Please enter your GitHub personal access token (PAT):
 ✔ cloned repository
 ► generating component manifests
 ✔ generated component manifests
-✔ committed component manifests to "main" ("144985eeefc3ca7459adf6c5f739613b0f04cdd0")
+✔ committed component manifests to "main" ("f9688b07b0b68cf20be87f921af6ba15dd01bb3b")
 ► pushing component manifests to "https://github.com/patsevanton/fluxcd-operator-and-status-page.git"
 ► installing components in "flux-system" namespace
 ✔ installed components
@@ -81,7 +81,7 @@ Please enter your GitHub personal access token (PAT):
 ✔ reconciled source secret
 ► generating sync manifests
 ✔ generated sync manifests
-✔ committed sync manifests to "main" ("5dfb679970b8d39ac6df490b2100f6977b7df056")
+✔ committed sync manifests to "main" ("2fa415b4e32fd9331c9621e8e28429e0e3cf1a44")
 ► pushing sync manifests to "https://github.com/patsevanton/fluxcd-operator-and-status-page.git"
 ► applying sync manifests
 ✔ reconciled sync configuration
