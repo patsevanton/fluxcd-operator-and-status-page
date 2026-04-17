@@ -1,0 +1,6 @@
+# Kustomization для Flux: источники, неймспейсы, ConfigMap с values, HelmReleases.
+# Применяется Flux Kustomization (указывает на этот каталог в Git).
+resources:
+  - namespaces.yaml
+  - sources.yaml
+  - vmks-helmrelease.yaml
