@@ -1,4 +1,3 @@
-# VictoriaMetrics K8s Stack: метрики, алерты, Grafana (VMCluster, vmalert, vmagent, Alertmanager).
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
@@ -8,9 +7,6 @@ spec:
   interval: 15m
   timeout: 10m
   targetNamespace: vmks
-  # Если HelmRelease не Ready с ошибкой "no endpoints available for service vmks-victoria-metrics-operator":
-  # validating webhook оператора вызывается до поднятия пода оператора; retries дают Flux повторить установку/апгрейд.
-  # Вручную: flux reconcile helmrelease vmks -n flux-system
   install:
     remediation:
       retries: 5
@@ -27,10 +23,6 @@ spec:
         namespace: flux-system
       interval: 5m
   releaseName: vmks
-  # Known issue on fresh install: helm-controller may fail with
-  # "no endpoints available for service vmks-victoria-metrics-operator"
-  # due to admission webhook race while operator pod is starting.
-  # Intentionally no workaround here for clean-version testing.
   values:
     grafana:
       ingress:
@@ -38,11 +30,3 @@ spec:
         enabled: true
         hosts:
           - grafana.apatsev.org.ru
-    vmsingle:
-      enabled: true
-      ingress:
-        select:
-          enabled: true
-          ingressClassName: nginx
-          hosts:
-            - vmselect.apatsev.org.ru

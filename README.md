@@ -2,7 +2,7 @@
 
 ## Цель проекта
 
-Мигрировать управление кластером с **классического FluxCD** на **Flux Operator**: единая точка настройки через FluxInstance, использование Mission Control и сохранение GitOps. В качестве примера разворачивается стек мониторинга **victoria-metrics-k8s-stack** (VictoriaMetrics, Grafana, Alertmanager).
+Мигрировать управление кластером с **классического FluxCD** на **Flux Operator**: единая точка настройки через FluxInstance, использование Mission Control и сохранение GitOps. В качестве примера разворачивается стек мониторинга **victoria-metrics-k8s-stack** (VictoriaMetrics VMSingle по умолчанию чарта, Grafana, Alertmanager).
 
 В репозитории описаны четыре части:
 
@@ -112,6 +112,29 @@ flux get kustomizations -A
 ```bash
 kubectl get secret vmks-grafana -n vmks -o jsonpath='{.data.admin-password}' | base64 --decode; echo
 ```
+
+### Проверка тем же чартом через Helm (без Flux)
+
+Чтобы сравнить поведение с `HelmRelease`, можно поставить **тот же** `victoria-metrics-k8s-stack` напрямую из репозитория VictoriaMetrics с теми же values, что в корневом [vmks-values.yaml](vmks-values.yaml) (ingress Grafana на `grafana.apatsev.org.ru`). Выполняйте из корня клонированного репозитория:
+
+```bash
+helm repo add vm https://victoriametrics.github.io/helm-charts/
+helm repo update
+helm install vmks vm/victoria-metrics-k8s-stack \
+  --namespace vmks \
+  --create-namespace \
+  --version 0.74.1 \
+  --values vmks-values.yaml
+```
+
+Проверка подов и снятие тестового релиза:
+
+```bash
+kubectl get pods -n vmks
+helm uninstall vmks --namespace vmks
+```
+
+Если в namespace `vmks` уже идёт синхронизация того же релиза через Flux, имена ресурсов могут конфликтовать: для чистой проверки Helm используйте другой `--namespace` или временно отключите соответствующий `HelmRelease`.
 
 ## 2. Переход со классического FluxCD на Flux Operator
 
@@ -243,11 +266,11 @@ helm upgrade flux-operator oci://ghcr.io/controlplaneio-fluxcd/charts/flux-opera
 
 ## Развёрнутый стек (кратко)
 
-| Компонент                 | Namespace   | Назначение                                      |
-|||--|
-| VictoriaMetrics K8s Stack | vmks       | VMCluster, vmalert, vmagent, Alertmanager, Grafana |
+| Компонент                 | Namespace | Назначение                                                |
+| ------------------------- | --------- | --------------------------------------------------------- |
+| VictoriaMetrics K8s Stack | vmks      | VMSingle (дефолт чарта), vmalert, vmagent, Alertmanager, Grafana |
 
-Параметры (реплики, лимиты, ingress) задаются в `spec.values` манифеста [apps/vmks-helmrelease.yaml](apps/vmks-helmrelease.yaml). Расширенный пример values с комментариями по нагрузке — [vmks-values.yaml](vmks-values.yaml) в корне.
+Параметры (реплики, лимиты, ingress) задаются в `spec.values` манифеста [apps/vmks-helmrelease.yaml](apps/vmks-helmrelease.yaml). Пример values для ручного `helm install` — [vmks-values.yaml](vmks-values.yaml) в корне.
 
 ## Инфраструктура (Terraform)
 
