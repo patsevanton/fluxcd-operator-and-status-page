@@ -22,15 +22,24 @@
 
 ### Структура репозитория (Flux)
 
-- **`apps/`** — манифесты стека и источников (точка входа — `apps/kustomization.yaml`):
+- **`kustomization.yaml`** (в корне) — точка входа для Flux; включает `apps/` и `flux-system/`.
+- **`apps/`** — манифесты стека и источников:
   - [apps/sources.yaml](apps/sources.yaml) — `HelmRepository` для чартов VictoriaMetrics;
   - [apps/namespaces.yaml](apps/namespaces.yaml) — неймспейс `vmks`;
   - [apps/vmks-helmrelease.yaml](apps/vmks-helmrelease.yaml) — `HelmRelease` victoria-metrics-k8s-stack (values заданы в `spec.values`);
   - [apps/kustomization.yaml](apps/kustomization.yaml) — сборка ресурсов.
 
-Каталог `flux/` оставляется под служебные манифесты самого Flux (`gotk-*`), чтобы не смешивать их с манифестами приложений.
+Каталог **`flux-system/`** создаётся автоматически во время `flux bootstrap` в корне репозитория (там появляются служебные `gotk-*` манифесты Flux).
 
-Все перечисленные файлы создаются вручную и коммитятся в Git до выполнения `flux bootstrap`.
+До bootstrap вручную подготавливаются и коммитятся только пользовательские манифесты (`apps/` и корневой `kustomization.yaml`).
+
+Пример корневого `kustomization.yaml`:
+
+```yaml
+resources:
+  - ./apps
+  - ./flux-system
+```
 
 ### GitHub Personal Access Token (PAT) для bootstrap
 
@@ -59,7 +68,7 @@ flux bootstrap github \
   --owner=patsevanton \
   --repository=fluxcd-operator-and-status-page \
   --branch=main \
-  --path=apps
+  --path=.
 ```
 
 Вывод примерно вот такой
@@ -97,7 +106,7 @@ Please enter your GitHub personal access token (PAT):
 ✔ all components are healthy
 ```
 
-При таком вызове Flux устанавливает в кластере свои компоненты (контроллеры) и создаёт ресурсы **GitRepository** и **Kustomization** для синхронизации из этого репозитория. Манифесты приложения (`apps/sources.yaml`, `apps/vmks-helmrelease.yaml`, `apps/kustomization.yaml` и т.д.) в репозитории Flux не создаёт — их добавляют вручную по списку выше до bootstrap.
+При таком вызове Flux устанавливает в кластере свои компоненты (контроллеры), создаёт в репозитории каталог **`flux-system/`** в корне и настраивает **GitRepository** + **Kustomization** на синхронизацию из корня (`--path=.`). Манифесты приложения (`apps/sources.yaml`, `apps/vmks-helmrelease.yaml`, `apps/kustomization.yaml` и т.д.) Flux не генерирует — их добавляют вручную по списку выше до bootstrap.
 
 ### Проверка после реконсиляции
 
@@ -158,7 +167,7 @@ helm install flux-operator oci://ghcr.io/controlplaneio-fluxcd/charts/flux-opera
 
 #### 2. Создать FluxInstance
 
-FluxInstance должен указывать на тот же репозиторий и путь, что и текущий bootstrap (чтобы применялся тот же `apps/kustomization.yaml`).
+FluxInstance должен указывать на тот же репозиторий и путь, что и текущий bootstrap (в этом README — корень репозитория, `path: "."`).
 
 Создайте `flux-instance.yaml` и подставьте свой URL и ветку:
 
@@ -188,7 +197,7 @@ spec:
     kind: GitRepository
     url: "https://github.com/YOUR_ORG/fluxcd-operator-and-status-page.git"
     ref: "refs/heads/main"
-    path: "apps"
+    path: "."
 ```
 
 Для приватного репозитория создайте secret в `flux-system` и укажите `spec.sync.pullSecret` (см. [документацию](https://fluxoperator.dev/docs/instance/sync/#sync-from-a-git-repository)).
@@ -212,7 +221,7 @@ flux get helmreleases -A
 
 #### 4. (Опционально) Очистка репозитория
 
-Если ранее использовался `flux bootstrap`, в Git мог появиться каталог `apps/flux-system/` с манифестами Flux. После успешной миграции на Flux Operator эти манифесты можно удалить из репозитория — компоненты Flux теперь управляются оператором. Подробнее: [Flux Bootstrap Migration](https://fluxcd.control-plane.io/operator/flux-bootstrap-migration).
+Если ранее использовался `flux bootstrap`, в Git появляется каталог `flux-system/` (в корне) с манифестами Flux. После успешной миграции на Flux Operator эти манифесты можно удалить из репозитория — компоненты Flux теперь управляются оператором. Подробнее: [Flux Bootstrap Migration](https://fluxcd.control-plane.io/operator/flux-bootstrap-migration).
 
 ## 3. Обзор FluxCD Status Page
 
