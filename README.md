@@ -22,24 +22,15 @@
 
 ### Структура репозитория (Flux)
 
-- **`kustomization.yaml`** (в корне) — точка входа для Flux; включает `apps/` и `flux-system/`.
-- **`apps/`** — манифесты стека и источников:
-  - [apps/sources.yaml](apps/sources.yaml) — `HelmRepository` для чартов VictoriaMetrics;
-  - [apps/namespaces.yaml](apps/namespaces.yaml) — неймспейс `vmks`;
-  - [apps/vmks-helmrelease.yaml](apps/vmks-helmrelease.yaml) — `HelmRelease` victoria-metrics-k8s-stack (values заданы в `spec.values`);
-  - [apps/kustomization.yaml](apps/kustomization.yaml) — сборка ресурсов.
+- **`base/flux-system/`** — единая точка входа для корневой Flux Kustomization (`--path=base/flux-system`): [base/flux-system/kustomization.yaml](base/flux-system/kustomization.yaml) собирает компоненты Flux, [gotk-sync.yaml](base/flux-system/gotk-sync.yaml) (GitRepository + Kustomization на этот каталог) и [apps.yaml](base/flux-system/apps.yaml) — Flux `Kustomization` на каталог [apps/](apps/).
+- **`apps/`** — корневой [apps/kustomization.yaml](apps/kustomization.yaml) подключает подкаталоги приложений; для стека VictoriaMetrics:
+  - [apps/victoria-metrics/sources.yaml](apps/victoria-metrics/sources.yaml) — `HelmRepository` VictoriaMetrics;
+  - [apps/victoria-metrics/namespaces.yaml](apps/victoria-metrics/namespaces.yaml) — неймспейс `vmks`;
+  - [apps/victoria-metrics/vmks-helmrelease.yaml](apps/victoria-metrics/vmks-helmrelease.yaml) — `HelmRelease` victoria-metrics-k8s-stack (`spec.values`);
+  - [apps/victoria-metrics/kustomization.yaml](apps/victoria-metrics/kustomization.yaml) — сборка этого приложения.
 
-Каталог **`flux-system/`** создаётся автоматически во время `flux bootstrap` в корне репозитория (там появляются служебные `gotk-*` манифесты Flux).
+При первом **`flux bootstrap`** CLI по умолчанию создаёт каталог `flux-system/` в корне; в этом репозитории манифесты Flux лежат в **`base/flux-system/`** (уже в Git). До bootstrap вручную коммитятся пользовательские манифесты (`apps/`).
 
-До bootstrap вручную подготавливаются и коммитятся только пользовательские манифесты (`apps/` и корневой `kustomization.yaml`).
-
-Пример корневого `kustomization.yaml`:
-
-```yaml
-resources:
-  - ./apps
-  - ./flux-system
-```
 
 ### GitHub Personal Access Token (PAT) для bootstrap
 
@@ -68,7 +59,7 @@ flux bootstrap github \
   --owner=patsevanton \
   --repository=fluxcd-operator-and-status-page \
   --branch=main \
-  --path=.
+  --path=base
 ```
 
 Вывод примерно вот такой
@@ -106,7 +97,7 @@ Please enter your GitHub personal access token (PAT):
 ✔ all components are healthy
 ```
 
-При таком вызове Flux устанавливает в кластере свои компоненты (контроллеры), создаёт в репозитории каталог **`flux-system/`** в корне и настраивает **GitRepository** + **Kustomization** на синхронизацию из корня (`--path=.`). Манифесты приложения (`apps/sources.yaml`, `apps/vmks-helmrelease.yaml`, `apps/kustomization.yaml` и т.д.) Flux не генерирует — их добавляют вручную по списку выше до bootstrap.
+При таком вызове Flux устанавливает в кластере свои компоненты (контроллеры), коммитит манифесты синхронизации и настраивает **GitRepository** + **Kustomization** на синхронизацию из каталога **`base/flux-system/`** (`--path=base/flux-system`). Манифесты приложений и раскладку `base/flux-system/` / `apps/` Flux не генерирует — их добавляют вручную до или после bootstrap.
 
 ### Проверка после реконсиляции
 
@@ -221,7 +212,7 @@ flux get helmreleases -A
 
 #### 4. (Опционально) Очистка репозитория
 
-Если ранее использовался `flux bootstrap`, в Git появляется каталог `flux-system/` (в корне) с манифестами Flux. После успешной миграции на Flux Operator эти манифесты можно удалить из репозитория — компоненты Flux теперь управляются оператором. Подробнее: [Flux Bootstrap Migration](https://fluxcd.control-plane.io/operator/flux-bootstrap-migration).
+Если ранее использовался `flux bootstrap`, в Git появляется каталог `flux-system/` (часто в корне; в этом репозитории аналог — `base/flux-system/`). После успешной миграции на Flux Operator эти манифесты можно удалить из репозитория — компоненты Flux теперь управляются оператором. Подробнее: [Flux Bootstrap Migration](https://fluxcd.control-plane.io/operator/flux-bootstrap-migration).
 
 ## 3. Обзор FluxCD Status Page
 
@@ -279,7 +270,7 @@ helm upgrade flux-operator oci://ghcr.io/controlplaneio-fluxcd/charts/flux-opera
 | ------------------------- | --------- | --------------------------------------------------------- |
 | VictoriaMetrics K8s Stack | vmks      | VMSingle (дефолт чарта), vmalert, vmagent, Alertmanager, Grafana |
 
-Параметры (реплики, лимиты, ingress) задаются в `spec.values` манифеста [apps/vmks-helmrelease.yaml](apps/vmks-helmrelease.yaml). Пример values для ручного `helm install` — [vmks-values.yaml](vmks-values.yaml) в корне.
+Параметры (реплики, лимиты, ingress) задаются в `spec.values` манифеста [apps/victoria-metrics/vmks-helmrelease.yaml](apps/victoria-metrics/vmks-helmrelease.yaml). Пример values для ручного `helm install` — [vmks-values.yaml](vmks-values.yaml) в корне.
 
 ## Инфраструктура (Terraform)
 
