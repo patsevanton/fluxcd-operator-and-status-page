@@ -8,9 +8,7 @@ spec:
   timeout: 15m
   targetNamespace: vmks
   install:
-    # Отключаем wait на install, чтобы chart не падал на старте с webhook-ошибками
-    # ("no endpoints available for service vmks-victoria-metrics-operator").
-    disableWait: true
+    disableWait: false
     remediation:
       retries: 5
   upgrade:
