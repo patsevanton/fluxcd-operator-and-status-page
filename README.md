@@ -22,14 +22,15 @@
 
 ### Структура репозитория (Flux)
 
-- **`base/flux-system/`** — единая точка входа для корневой Flux Kustomization (`--path=base/flux-system`): [base/flux-system/kustomization.yaml](base/flux-system/kustomization.yaml) собирает компоненты Flux, [gotk-sync.yaml](base/flux-system/gotk-sync.yaml) (GitRepository + Kustomization на этот каталог) и [apps.yaml](base/flux-system/apps.yaml) — Flux `Kustomization` на каталог [apps/](apps/).
+- **`base/kustomization.yaml`** — точка входа kustomize для синхронизации из каталога **`base/`** (`--path=base`): подключает [base/flux-system/](base/flux-system/) и Flux [base/apps.yaml](base/apps.yaml) на каталог [apps/](apps/).
+- **`base/flux-system/`** — компоненты Flux (`gotk-components.yaml`), [gotk-sync.yaml](base/flux-system/gotk-sync.yaml) (GitRepository + Kustomization с `path: ./base`).
 - **`apps/`** — корневой [apps/kustomization.yaml](apps/kustomization.yaml) подключает подкаталоги приложений; для стека VictoriaMetrics:
   - [apps/victoria-metrics/sources.yaml](apps/victoria-metrics/sources.yaml) — `HelmRepository` VictoriaMetrics;
   - [apps/victoria-metrics/namespaces.yaml](apps/victoria-metrics/namespaces.yaml) — неймспейс `vmks`;
   - [apps/victoria-metrics/vmks-helmrelease.yaml](apps/victoria-metrics/vmks-helmrelease.yaml) — `HelmRelease` victoria-metrics-k8s-stack (`spec.values`);
   - [apps/victoria-metrics/kustomization.yaml](apps/victoria-metrics/kustomization.yaml) — сборка этого приложения.
 
-При первом **`flux bootstrap`** CLI по умолчанию создаёт каталог `flux-system/` в корне; в этом репозитории манифесты Flux лежат в **`base/flux-system/`** (уже в Git). До bootstrap вручную коммитятся пользовательские манифесты (`apps/`).
+При первом **`flux bootstrap`** CLI по умолчанию создаёт каталог `flux-system/` в корне; в этом репозитории манифесты Flux лежат в **`base/flux-system/`** (уже в Git). До bootstrap вручную коммитятся пользовательские манифесты (`apps/`, `base/apps.yaml` и т.д.).
 
 
 ### GitHub Personal Access Token (PAT) для bootstrap
@@ -97,7 +98,7 @@ Please enter your GitHub personal access token (PAT):
 ✔ all components are healthy
 ```
 
-При таком вызове Flux устанавливает в кластере свои компоненты (контроллеры), коммитит манифесты синхронизации и настраивает **GitRepository** + **Kustomization** на синхронизацию из каталога **`base/flux-system/`** (`--path=base/flux-system`). Манифесты приложений и раскладку `base/flux-system/` / `apps/` Flux не генерирует — их добавляют вручную до или после bootstrap.
+При таком вызове Flux устанавливает в кластере свои компоненты (контроллеры), коммитит манифесты синхронизации и настраивает **GitRepository** + **Kustomization** на синхронизацию из каталога **`base/`** (`--path=base`). Манифесты приложений и раскладку `base/` / `apps/` Flux не генерирует — их добавляют вручную до или после bootstrap.
 
 ### Проверка после реконсиляции
 
