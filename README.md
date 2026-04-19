@@ -2,9 +2,9 @@
 
 Когда вы впервые поднимаете GitOps в Kubernetes, **Flux CD** кажется достаточным: `flux bootstrap`, манифесты в Git, контроллеры тянут состояние кластера. Со временем появляется желание **централизованно** управлять версиями дистрибутива Flux, упростить миграции и получить **наглядную картину** синхронизации — без ручного запуска `flux get all -A`.
 
-В этом материале зафиксирован путь от классического bootstrap к **[Flux Operator](https://fluxoperator.dev/)** с ресурсом **FluxInstance**, подключённому FluxCD Status Page и типичному «продуктовому» стеку вокруг observability и релизов (VictoriaMetrics, логи, сертификаты, безопасность, эксперименты с нагрузкой).
+В этом материале зафиксирован путь от классического bootstrap к **[Flux Operator](https://fluxoperator.dev/)** с ресурсом **FluxInstance** и **FluxCD Status Page**. В GitOps-части репозитория разворачиваются **Flux Operator** ([apps/flux-operator-template](apps/flux-operator-template/)) и стек **[VictoriaMetrics K8s Stack](https://github.com/VictoriaMetrics/helm-charts/tree/master/charts/victoria-metrics-k8s-stack)** ([apps/victoria-metrics](apps/victoria-metrics/)).
 
-Ниже — суть подхода, [структура репозитория](#как-устроен-репозиторий) и пошаговые команды. Про **FluxReport**, события и метрики Status Page — [отдельный раздел](#fluxcd-status-page); полный перечень приложений — [в таблице стека](#развёрнутый-стек).
+Ниже — суть подхода, [структура репозитория](#как-устроен-репозиторий) и пошаговые команды. Про **FluxReport**, события и метрики Status Page — [отдельный раздел](#fluxcd-status-page); состав приложений в Git — [в таблице стека](#развёрнутый-стек).
 
 
 ## Зачем такая схема
@@ -22,9 +22,10 @@
 
 | Путь | Роль |
 |------|------|
-| [base/apps.yaml](base/apps.yaml) | Отдельные Flux `Kustomization` на каталоги `apps/<имя>` |
+| [base/kustomization.yaml](base/kustomization.yaml) | Корневой kustomize: `flux-system` + [apps.yaml](base/apps.yaml) |
+| [base/apps.yaml](base/apps.yaml) | Flux `Kustomization`: **flux-operator**, **victoria-metrics** |
 | [base/flux-system/](base/flux-system/) | Компоненты Flux (`gotk-components.yaml`), [gotk-sync.yaml](base/flux-system/gotk-sync.yaml) — `GitRepository` + `Kustomization` с `path: ./base` |
-| [apps/](apps/) | Манифесты приложений; [apps/kustomization.yaml](apps/kustomization.yaml) — для локального `kustomize build apps/` |
+| [apps/](apps/) | [apps/kustomization.yaml](apps/kustomization.yaml) — локальный `kustomize build apps/` |
 
 **Нюанс раскладки:** при первом `flux bootstrap` CLI по умолчанию кладёт `flux-system/` в корень репозитория. Содержимое `base/` и `apps/` вы коммитите в Git до или после bootstrap — главное, чтобы путь в bootstrap совпадал с тем, что ожидает кластер.
 
@@ -76,6 +77,7 @@ Please enter your GitHub personal access token (PAT):
 ### Проверка после bootstrap
 
 ```bash
+kubectl get pods -n flux-system
 kubectl get pods -n vmks
 flux get helmreleases -n flux-system
 flux get kustomizations -A
@@ -90,9 +92,11 @@ flux get kustomizations -A
 
 ### Установка Flux Operator
 
-Чтобы **helm-controller** ставил оператор из Git (OCI-чарт и `HelmRelease`), создайте каталог **`apps/flux-operator`** и два файла с содержимым ниже.
+В репозитории уже есть каталог **[apps/flux-operator-template](apps/flux-operator-template/)** с OCI-источником и `HelmRelease`; [base/apps.yaml](base/apps.yaml) содержит `Kustomization` с `path: ./apps/flux-operator-template`.
 
-**`apps/flux-operator/sources.yaml`**
+Ниже — те же манифесты для самостоятельной копии (например в `apps/flux-operator`).
+
+**`sources.yaml`**
 
 ```yaml
 # OCI Helm-репозиторий ControlPlane (чарт flux-operator).
@@ -107,7 +111,7 @@ spec:
   url: oci://ghcr.io/controlplaneio-fluxcd/charts
 ```
 
-**`apps/flux-operator/helmrelease.yaml`**
+**`helmrelease.yaml`**
 
 ```yaml
 apiVersion: helm.toolkit.fluxcd.io/v2
@@ -143,30 +147,9 @@ spec:
                 pathType: Prefix
 ```
 
-В [base/apps.yaml](https://github.com/patsevanton/fluxcd-operator-and-status-page/blob/main/base/apps.yaml) между ресурсами **`falco`** и **`goldpinger`** вставьте следующий текст (вместо закомментированного блока `flux-operator`):
+`Kustomization` **flux-operator** уже описан в [base/apps.yaml](base/apps.yaml) и указывает на `./apps/flux-operator-template`. Закоммитьте изменения и дождитесь синхронизации: `flux get kustomizations -n flux-system`, `flux get helmreleases -n flux-system`.
 
-```yaml
----
-apiVersion: kustomize.toolkit.fluxcd.io/v1
-kind: Kustomization
-metadata:
-  name: flux-operator
-  namespace: flux-system
-spec:
-  interval: 10m
-  sourceRef:
-    kind: GitRepository
-    name: flux-system
-  serviceAccountName: kustomize-controller
-  path: ./apps/flux-operator
-  prune: true
-  wait: true
-  timeout: 10m
-```
-
-1. Сохраните файл и закоммитьте; дождитесь синхронизации: `flux get kustomizations -n flux-system`, `flux get helmreleases -n flux-system`.
-
-Проверка: `flux get helmreleases -n flux-system` (релиз `flux-operator`). Версия чарта и `values` задаются в манифестах под `apps/flux-operator/`.
+Проверка: `flux get helmreleases -n flux-system` (релиз `flux-operator`). Версия чарта и `values` — в [apps/flux-operator-template/helmrelease.yaml](apps/flux-operator-template/helmrelease.yaml).
 
 Установка оператора не через этот репозиторий — в [документации Flux Operator](https://fluxoperator.dev/docs/guides/install/) (Helm, kubectl, Terraform и др.).
 
@@ -240,7 +223,7 @@ resources:
 
 После установки Flux Operator в игру входят **FluxReport**, события по `FluxInstance` и метрики Prometheus.
 
-**Демо-интерфейс:** [http://flux.apatsev.org.ru/](http://flux.apatsev.org.ru/) — host и `baseURL` задаются в [apps/flux-operator/helmrelease.yaml](apps/flux-operator/helmrelease.yaml).
+**Демо-интерфейс:** [http://flux.apatsev.org.ru/](http://flux.apatsev.org.ru/) — host и `baseURL` задаются в [apps/flux-operator-template/helmrelease.yaml](apps/flux-operator-template/helmrelease.yaml).
 
 ### Скриншоты
 
@@ -282,7 +265,7 @@ kubectl -n flux-system events --for fluxinstance/flux
 
 ### Метрики
 
-Сервис `flux-operator`, порт **8080**. Чтобы изменить параметры чарта (например интервал отчёта `reporting.interval`), отредактируйте `spec.values` в [apps/flux-operator/helmrelease.yaml](apps/flux-operator/helmrelease.yaml) и закоммитьте.
+Сервис `flux-operator`, порт **8080**. Чтобы изменить параметры чарта (например интервал отчёта `reporting.interval`), отредактируйте `spec.values` в [apps/flux-operator-template/helmrelease.yaml](apps/flux-operator-template/helmrelease.yaml) и закоммитьте.
 
 Для Prometheus Operator: `serviceMonitor.create=true` в `values`. Подробнее: [Flux Monitoring and Reporting](https://fluxcd.control-plane.io/operator/monitoring).
 
@@ -295,21 +278,8 @@ kubectl -n flux-system events --for fluxinstance/flux
 |-----------|------------|------------|
 | Flux Operator | flux-system | Оператор Flux, Mission Control, [Status Page](http://flux.apatsev.org.ru/) |
 | VictoriaMetrics K8s Stack | vmks | VMSingle, vmagent, vmalert, Alertmanager, Grafana |
-| VictoriaLogs | vlogs | Логи (single-node) |
-| Vector | vector | Сбор логов в VictoriaLogs |
-| cert-manager | cert-manager | TLS |
-| External Secrets Operator | external-secrets | Секреты из внешних хранилищ |
-| Blackbox Exporter | blackbox-exporter | HTTP/TCP пробы |
-| Goldpinger | goldpinger | Связность между нодами |
-| Prometheus Adapter | prometheus-adapter | Custom Metrics API для HPA |
-| KEDA | keda | Автомасштабирование |
-| Kubernetes Descheduler | descheduler | Перераспределение подов |
-| Reloader | reloader | Перезапуск при смене ConfigMap/Secret |
-| Falco | falco | Runtime security |
-| Argo Rollouts | argo-rollouts | Canary / blue-green |
-| Chaos Mesh | chaos-mesh | Хаос-инжиниринг |
 
-Параметры VictoriaMetrics — `spec.values` в [apps/victoria-metrics/helmrelease.yaml](apps/victoria-metrics/helmrelease.yaml).
+Параметры чарта — `spec.values` в [apps/victoria-metrics/helmrelease.yaml](apps/victoria-metrics/helmrelease.yaml).
 
 
 ## Полезные команды
@@ -319,6 +289,7 @@ flux get sources helm
 flux get helmreleases -A
 flux get kustomizations -A
 flux logs --all-namespaces --follow
+kubectl get pods -n flux-system
 kubectl get pods -n vmks
 ```
 
@@ -335,7 +306,7 @@ kubectl get pods -n vmks
 
 ## Метрики и Grafana
 
-[VictoriaMetrics K8s Stack](https://github.com/VictoriaMetrics/helm-charts/tree/master/charts/victoria-metrics-k8s-stack) поднимает **Grafana** вместе с vmagent, VMSingle и правилами алертинга: в интерфейсе открываются готовые дашборды по Kubernetes и целям сбора метрик, можно строить свои запросы к тем же данным, что пишет VictoriaMetrics.
+[VictoriaMetrics K8s Stack](https://github.com/VictoriaMetrics/helm-charts/tree/master/charts/victoria-metrics-k8s-stack) поднимает **Grafana** вместе с vmagent, VMSingle и правилами алертинга.
 
 **Веб-доступ:** в этом репозитории для Grafana включён Ingress — [https://grafana.apatsev.org.ru](https://grafana.apatsev.org.ru) (см. [apps/victoria-metrics/helmrelease.yaml](apps/victoria-metrics/helmrelease.yaml)). Локально без Ingress: `kubectl port-forward -n vmks svc/vmks-grafana 3000:80` и открыть [http://127.0.0.1:3000](http://127.0.0.1:3000); логин по умолчанию — `admin`.
 
