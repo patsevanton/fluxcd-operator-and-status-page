@@ -84,8 +84,6 @@ metadata:
   name: external-secrets
   namespace: flux-system
 spec:
-  dependsOn:
-    - name: cert-manager
   interval: 10m
   sourceRef:
     kind: GitRepository
