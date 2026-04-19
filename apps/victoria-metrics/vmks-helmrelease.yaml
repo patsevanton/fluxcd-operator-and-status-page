@@ -8,12 +8,13 @@ spec:
   timeout: 15m
   targetNamespace: vmks
   install:
-    disableWait: false
-    remediation:
-      retries: 5
+    strategy:
+      name: RetryOnFailure
+      retryInterval: 5m
   upgrade:
-    remediation:
-      retries: 3
+    strategy:
+      name: RetryOnFailure
+      retryInterval: 5m
   chart:
     spec:
       chart: victoria-metrics-k8s-stack
