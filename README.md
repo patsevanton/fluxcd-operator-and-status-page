@@ -1,4 +1,4 @@
-# Миграция на FluxCD Operator и обзор FluxCD Status Page
+# Миграция c FluxCD CLI на FluxCD Operator и обзор FluxCD Status Page
 
 GitOps-репозиторий для кластера Kubernetes: классический Flux CD (bootstrap), переход на **Flux Operator** с **FluxInstance**, веб-интерфейс **FluxCD Status Page** и набор приложений (observability, безопасность, релизы).
 
