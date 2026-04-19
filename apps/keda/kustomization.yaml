@@ -1,4 +1,0 @@
-resources:
-  - namespaces.yaml
-  - sources.yaml
-  - helmrelease.yaml
