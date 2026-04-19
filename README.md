@@ -178,7 +178,7 @@ metadata:
   namespace: flux-system
 spec:
   distribution:
-    version: "2.7.x"
+    version: "2.8.x"
     registry: "ghcr.io/fluxcd"
   components:
     - source-controller
@@ -187,7 +187,7 @@ spec:
     - notification-controller
   sync:
     kind: GitRepository
-    url: "https://github.com/YOUR_ORG/fluxcd-operator-and-status-page.git"
+    url: "https://github.com/patsevanton/fluxcd-operator-and-status-page.git"
     ref: "refs/heads/main"
     path: "."
 ```
