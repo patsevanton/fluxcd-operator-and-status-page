@@ -42,3 +42,12 @@ resource "yandex_dns_recordset" "victoriametrics" {
   ttl     = 200
   data    = [yandex_vpc_address.addr.external_ipv4_address[0].address]
 }
+
+# Flux Operator Web UI (Mission Control / Status Page)
+resource "yandex_dns_recordset" "flux_web" {
+  zone_id = yandex_dns_zone.apatsev-org-ru.id
+  name    = "flux.apatsev.org.ru."
+  type    = "A"
+  ttl     = 200
+  data    = [yandex_vpc_address.addr.external_ipv4_address[0].address]
+}

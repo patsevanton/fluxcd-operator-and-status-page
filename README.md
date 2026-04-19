@@ -4,6 +4,14 @@
 
 Мигрировать управление кластером с **классического FluxCD** на **Flux Operator**: единая точка настройки через FluxInstance, использование Mission Control и сохранение GitOps. В качестве примера разворачивается стек мониторинга **victoria-metrics-k8s-stack** (VictoriaMetrics VMSingle по умолчанию чарта, Grafana, Alertmanager).
 
+### Последовательность шагов (обязательный порядок)
+
+1. **Установить консольный Flux (Flux CLI)** — бинарник `flux` на машине, с которой выполняется bootstrap и дальнейшие команды. Без CLI нельзя выполнить `flux bootstrap` и проверять состояние кластера стандартными командами `flux get …`.
+2. **Развернуть классический Flux в кластере** — `flux bootstrap` (или эквивалент), чтобы в кластере появились контроллеры Flux и синхронизация с Git (раздел [1](#1-установка-victoria-metrics-k8s-stack-через-классический-fluxcd)).
+3. **Мигрировать на Flux Operator** — установка оператора, `FluxInstance` и перенос управления компонентами Flux на оператор (раздел [2](#2-переход-со-классического-fluxcd-на-flux-operator)).
+
+Сначала всегда полноценный «классический» FluxCD через CLI и bootstrap; переход на оператор — отдельный этап после этого.
+
 В репозитории описаны четыре части:
 
 1. **Установка victoria-metrics-k8s-stack через классический FluxCD** — классический GitOps: HelmRepository + HelmRelease.
@@ -18,7 +26,10 @@
 ### Предусловия
 
 - Чистый кластер Kubernetes.
-- Бинарник FluxCD установлен локально
+- **Установлен Flux CLI** (консольный `flux`): см. [Installing the Flux CLI](https://fluxcd.io/flux/installation/). Проверка: `flux version --client`.
+- Доступ к репозиторию Git (для `flux bootstrap`) и при необходимости PAT, как в разделе [GitHub Personal Access Token](#github-personal-access-token-pat-для-bootstrap).
+
+После установки CLI следующий шаг — **bootstrap** (ниже), который ставит в кластер классический Flux; миграция на Flux Operator выполняется позже, по разделу [2](#2-переход-со-классического-fluxcd-на-flux-operator).
 
 ### Структура репозитория (Flux)
 
@@ -139,7 +150,9 @@ helm uninstall vmks --namespace vmks
 
 ## 2. Переход со классического FluxCD на Flux Operator
 
-После того как victoria-metrics-k8s-stack уже развёрнут через классический FluxCD (часть 1), кластер можно перевести на управление через **Flux Operator**: оператор устанавливает и обновляет компоненты Flux, даёт единую точку конфигурации (FluxInstance) и при необходимости — [Mission Control](https://fluxoperator.dev/docs/) (веб-интерфейс).
+Этот раздел выполняется **только после** того, как установлен Flux CLI, выполнен `flux bootstrap` и в кластере работает классический Flux (и при желании уже развёрнут victoria-metrics-k8s-stack из части 1).
+
+После того как стек уже развёрнут через классический FluxCD (часть 1), кластер можно перевести на управление через **Flux Operator**: оператор устанавливает и обновляет компоненты Flux, даёт единую точку конфигурации (FluxInstance) и при необходимости — [Mission Control](https://fluxoperator.dev/docs/) (веб-интерфейс).
 
 Манифесты приложений (в т.ч. HelmRelease для vmks) остаются в Git; меняется только то, *кто* запускает Flux и откуда берётся конфигурация (из того же репозитория).
 
@@ -300,6 +313,7 @@ helm upgrade flux-operator oci://ghcr.io/controlplaneio-fluxcd/charts/flux-opera
 
 ## Ссылки
 
+- [Installing the Flux CLI](https://fluxcd.io/flux/installation/) (консольный `flux` — шаг до bootstrap)
 - [Flux Documentation](https://fluxcd.io/flux/)
 - [Flux Get Started](https://fluxcd.io/flux/get-started/)
 - [Manage Helm Releases (Flux)](https://fluxcd.io/flux/guides/helmreleases/)
