@@ -4,14 +4,7 @@
 
 В этом материале зафиксирован путь от классического bootstrap к **[Flux Operator](https://fluxoperator.dev/)** с ресурсом **FluxInstance**, подключённому FluxCD Status Page и типичному «продуктовому» стеку вокруг observability и релизов (VictoriaMetrics, логи, сертификаты, безопасность, эксперименты с нагрузкой).
 
-Ниже — суть подхода, структура GitOps-дерева и пошаговые команды, которые можно повторить у себя.
-
-## Что вы найдёте здесь
-
-- **Классический Flux CD** — как обычно: `HelmRepository`, `HelmRelease`, `Kustomization` из Git; точка входа — [base/apps.yaml](base/apps.yaml) и каталоги `apps/<имя>`.
-- **Flux Operator** — одна декларативная конфигурация через **FluxInstance** (при желании — Mission Control из экосистемы оператора).
-- **Status Page** — отчёты **FluxReport**, события по `FluxInstance`, метрики для Prometheus (см. [раздел про Status Page](#fluxcd-status-page)).
-- **Прикладной стек** — VictoriaMetrics K8s Stack, VictoriaLogs, Vector, cert-manager, Argo Rollouts, Falco, KEDA, Chaos Mesh и другие компоненты; полный перечень — [в таблице ниже](#развёрнутый-стек).
+Ниже — суть подхода, [структура репозитория](#как-устроен-репозиторий) и пошаговые команды. Про **FluxReport**, события и метрики Status Page — [отдельный раздел](#fluxcd-status-page); полный перечень приложений — [в таблице стека](#развёрнутый-стек).
 
 
 ## Зачем такая схема
