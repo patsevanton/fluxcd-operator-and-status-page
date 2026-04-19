@@ -33,15 +33,15 @@
 
 ### Структура репозитория (Flux)
 
-- **`base/kustomization.yaml`** — точка входа kustomize для синхронизации из каталога **`base/`** (`--path=base`): подключает [base/flux-system/](base/flux-system/) и Flux [base/apps.yaml](base/apps.yaml) на каталог [apps/](apps/).
+- **`base/kustomization.yaml`** — точка входа kustomize для синхронизации из каталога **`base/`** (`--path=base`): подключает [base/flux-system/](base/flux-system/) и каталог [base/flux-apps/](base/flux-apps/) с отдельными Flux `Kustomization` на каждое приложение (`path: ./apps/<имя>`).
 - **`base/flux-system/`** — компоненты Flux (`gotk-components.yaml`), [gotk-sync.yaml](base/flux-system/gotk-sync.yaml) (GitRepository + Kustomization с `path: ./base`).
-- **`apps/`** — корневой [apps/kustomization.yaml](apps/kustomization.yaml) подключает подкаталоги приложений; для стека VictoriaMetrics:
+- **`apps/`** — манифесты приложений по подкаталогам; корневой [apps/kustomization.yaml](apps/kustomization.yaml) объединяет их для локальной сборки `kustomize build apps/`, в кластер же каждый подкаталог синхронизируется своим Flux `Kustomization` из `base/flux-apps/`. Для стека VictoriaMetrics:
   - [apps/victoria-metrics/sources.yaml](apps/victoria-metrics/sources.yaml) — `HelmRepository` VictoriaMetrics;
   - [apps/victoria-metrics/namespaces.yaml](apps/victoria-metrics/namespaces.yaml) — неймспейс `vmks`;
   - [apps/victoria-metrics/vmks-helmrelease.yaml](apps/victoria-metrics/vmks-helmrelease.yaml) — `HelmRelease` victoria-metrics-k8s-stack (`spec.values`);
   - [apps/victoria-metrics/kustomization.yaml](apps/victoria-metrics/kustomization.yaml) — сборка этого приложения.
 
-При первом **`flux bootstrap`** CLI по умолчанию создаёт каталог `flux-system/` в корне; в этом репозитории манифесты Flux лежат в **`base/flux-system/`** (уже в Git). До bootstrap вручную коммитятся пользовательские манифесты (`apps/`, `base/apps.yaml` и т.д.).
+При первом **`flux bootstrap`** CLI по умолчанию создаёт каталог `flux-system/` в корне; в этом репозитории манифесты Flux лежат в **`base/flux-system/`** (уже в Git). До bootstrap вручную коммитятся пользовательские манифесты (`apps/`, `base/flux-apps/` и т.д.).
 
 
 ### GitHub Personal Access Token (PAT) для bootstrap
