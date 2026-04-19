@@ -143,7 +143,7 @@ spec:
                 pathType: Prefix
 ```
 
-В [base/apps.yaml](https://github.com/patsevanton/fluxcd-operator-and-status-page/blob/main/base/apps.yaml) ресурс **`Kustomization`** `flux-operator` по умолчанию закомментирован. Чтобы включить GitOps-путь, **удалите** закомментированный блок и **вставьте** на его место (между `falco` и `goldpinger`) следующий текст:
+В [base/apps.yaml](https://github.com/patsevanton/fluxcd-operator-and-status-page/blob/main/base/apps.yaml) между ресурсами **`falco`** и **`goldpinger`** вставьте следующий текст (вместо закомментированного блока `flux-operator`):
 
 ```yaml
 ---
@@ -164,8 +164,7 @@ spec:
   timeout: 10m
 ```
 
-1. Сохраните [base/apps.yaml](https://github.com/patsevanton/fluxcd-operator-and-status-page/blob/main/base/apps.yaml) с этим блоком вместо закомментированного.
-2. Закоммитьте изменения и дождитесь синхронизации: `flux get kustomizations -n flux-system`, `flux get helmreleases -n flux-system`.
+1. Сохраните файл и закоммитьте; дождитесь синхронизации: `flux get kustomizations -n flux-system`, `flux get helmreleases -n flux-system`.
 
 Проверка: `flux get helmreleases -n flux-system` (релиз `flux-operator`). Версия чарта и `values` задаются в манифестах под `apps/flux-operator/`.
 
