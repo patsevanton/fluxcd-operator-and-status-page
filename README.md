@@ -201,9 +201,36 @@ flux get helmreleases -A
 
 После перехода управление Flux переходит к оператору; GitRepository и Kustomization для пути `path` создаются оператором. Рабочие нагрузки (в т.ч. victoria-metrics-k8s-stack в `vmks`) продолжают реконсилироваться из того же Git.
 
-#### 4. (Опционально) Очистка репозитория
+#### 4. Очистка репозитория и перенос FluxInstance в GitOps
 
-Если ранее использовался `flux bootstrap`, в Git появляется каталог `flux-system/` (часто в корне; в этом репозитории аналог — `base/flux-system/`). После успешной миграции на Flux Operator эти манифесты можно удалить из репозитория — компоненты Flux теперь управляются оператором. Подробнее: [Flux Bootstrap Migration](https://fluxcd.control-plane.io/operator/flux-bootstrap-migration).
+После успешной миграции на Flux Operator старые манифесты классического Flux можно удалить из репозитория — компоненты Flux теперь управляются оператором. А сам манифест `flux-instance.yaml` лучше всего хранить в репозитории для самообновления (GitOps подхода).
+
+Удалите манифесты классического Flux:
+
+```bash
+git rm base/flux-system/gotk-components.yaml
+git rm base/flux-system/gotk-sync.yaml
+```
+
+Переместите `flux-instance.yaml` в каталог с конфигурацией системы:
+
+```bash
+mv flux-instance.yaml base/flux-system/
+git add base/flux-system/flux-instance.yaml
+```
+
+Обновите файл `base/flux-system/kustomization.yaml`, оставив в ресурсах только `flux-instance.yaml`:
+
+```yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- flux-instance.yaml
+```
+
+**Важно:** Если в вашем `flux-instance.yaml` был указан `path: "."`, не забудьте поменять его на `path: "./base"` (как это было настроено в удаленном `gotk-sync.yaml`), чтобы Flux продолжил корректно применять ваши манифесты из директории `base/`. После этого изменения закоммитьте и отправьте в Git.
+
+Подробнее о механизме очистки: [Flux Bootstrap Migration](https://fluxcd.control-plane.io/operator/flux-bootstrap-migration).
 
 ## 3. Обзор FluxCD Status Page
 
