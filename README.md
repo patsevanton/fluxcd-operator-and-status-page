@@ -6,7 +6,6 @@
 
 Ниже — суть подхода, структура GitOps-дерева и пошаговые команды, которые можно повторить у себя.
 
----
 
 ## Что вы найдёте здесь
 
@@ -15,7 +14,6 @@
 - **Status Page** — отчёты **FluxReport**, события по `FluxInstance`, метрики для Prometheus (см. [раздел про Status Page](#fluxcd-status-page)).
 - **Прикладной стек** — VictoriaMetrics K8s Stack, VictoriaLogs, Vector, cert-manager, Argo Rollouts, Falco, KEDA, Chaos Mesh и другие компоненты; полный перечень — [в таблице ниже](#развёрнутый-стек).
 
----
 
 ## Зачем такая схема
 
@@ -27,7 +25,6 @@
 
 Репозиторий специально держит **и** legacy-путь (`base/flux-system/` с `gotk-*`), **и** путь миграции через `FluxInstance`, чтобы читатель мог воспроизвести переход по шагам, а не только увидеть «финальный» снимок.
 
----
 
 ## Как устроен репозиторий
 
@@ -41,7 +38,6 @@
 
 **Нюанс раскладки:** при первом `flux bootstrap` CLI по умолчанию кладёт `flux-system/` в корень репозитория; здесь манифесты Flux уже лежат в **`base/flux-system/`**. Содержимое `base/` и `apps/` вы коммитите в Git до или после bootstrap — главное, чтобы путь в bootstrap совпадал с тем, что ожидает кластер.
 
----
 
 ## Часть 1. Классический Flux: bootstrap и приложения
 
@@ -95,7 +91,6 @@ flux get helmreleases -n flux-system
 flux get kustomizations -A
 ```
 
----
 
 ## Часть 2. Переход на Flux Operator
 
@@ -103,13 +98,86 @@ flux get kustomizations -A
 
 ### Установка Flux Operator
 
-```bash
-helm upgrade --install flux-operator oci://ghcr.io/controlplaneio-fluxcd/charts/flux-operator \
-  --namespace flux-system \
-  --create-namespace
+Чтобы **helm-controller** ставил оператор из Git (OCI-чарт и `HelmRelease`), создайте каталог **`apps/flux-operator`** и два файла с содержимым ниже.
+
+**`apps/flux-operator/sources.yaml`**
+
+```yaml
+# OCI Helm-репозиторий ControlPlane (чарт flux-operator).
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: cp-flux-operator
+  namespace: flux-system
+spec:
+  interval: 24h
+  type: oci
+  url: oci://ghcr.io/controlplaneio-fluxcd/charts
 ```
 
-Проверка: `helm list -n flux-system`. Альтернативы: [kubectl](https://fluxoperator.dev/docs/guides/install/#kubectl), [Terraform](https://fluxoperator.dev/docs/guides/install/#terraform), [flux-operator CLI](https://fluxoperator.dev/docs/guides/install/#flux-operator-cli).
+**`apps/flux-operator/helmrelease.yaml`**
+
+```yaml
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: flux-operator
+  namespace: flux-system
+spec:
+  interval: 30m
+  timeout: 10m
+  chart:
+    spec:
+      chart: flux-operator
+      version: "0.47.0"
+      sourceRef:
+        kind: HelmRepository
+        name: cp-flux-operator
+        namespace: flux-system
+      interval: 30m
+  releaseName: flux-operator
+  values:
+    web:
+      enabled: true
+      config:
+        baseURL: http://flux.apatsev.org.ru/
+      ingress:
+        enabled: true
+        className: nginx
+        hosts:
+          - host: flux.apatsev.org.ru
+            paths:
+              - path: /
+                pathType: Prefix
+```
+
+В [base/apps.yaml](https://github.com/patsevanton/fluxcd-operator-and-status-page/blob/main/base/apps.yaml) ресурс **`Kustomization`** `flux-operator` по умолчанию закомментирован. Чтобы включить GitOps-путь, **удалите** закомментированный блок и **вставьте** на его место (между `falco` и `goldpinger`) следующий текст:
+
+```yaml
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: flux-operator
+  namespace: flux-system
+spec:
+  interval: 10m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  serviceAccountName: kustomize-controller
+  path: ./apps/flux-operator
+  prune: true
+  wait: true
+  timeout: 10m
+```
+
+1. Сохраните [base/apps.yaml](https://github.com/patsevanton/fluxcd-operator-and-status-page/blob/main/base/apps.yaml) с этим блоком вместо закомментированного.
+2. Закоммитьте изменения и дождитесь синхронизации: `flux get kustomizations -n flux-system`, `flux get helmreleases -n flux-system`.
+
+Проверка: `flux get helmreleases -n flux-system` (релиз `flux-operator`). Версия чарта и `values` задаются в манифестах под `apps/flux-operator/`.
+
+Установка оператора не через этот репозиторий — в [документации Flux Operator](https://fluxoperator.dev/docs/guides/install/) (Helm, kubectl, Terraform и др.).
 
 ### Создание FluxInstance
 
@@ -176,7 +244,6 @@ resources:
 - flux-instance.yaml
 ```
 
----
 
 ## FluxCD Status Page
 
@@ -224,17 +291,10 @@ kubectl -n flux-system events --for fluxinstance/flux
 
 ### Метрики
 
-Сервис `flux-operator`, порт **8080**. Пример: уменьшить интервал отчёта:
+Сервис `flux-operator`, порт **8080**. Чтобы изменить параметры чарта (например интервал отчёта `reporting.interval`), отредактируйте `spec.values` в [apps/flux-operator/helmrelease.yaml](apps/flux-operator/helmrelease.yaml) и закоммитьте.
 
-```bash
-helm upgrade flux-operator oci://ghcr.io/controlplaneio-fluxcd/charts/flux-operator \
-  --namespace flux-system \
-  --set reporting.interval=30s
-```
+Для Prometheus Operator: `serviceMonitor.create=true` в `values`. Подробнее: [Flux Monitoring and Reporting](https://fluxcd.control-plane.io/operator/monitoring).
 
-Для Prometheus Operator: `serviceMonitor.create=true`. Подробнее: [Flux Monitoring and Reporting](https://fluxcd.control-plane.io/operator/monitoring).
-
----
 
 ## Развёрнутый стек
 
@@ -260,7 +320,6 @@ helm upgrade flux-operator oci://ghcr.io/controlplaneio-fluxcd/charts/flux-opera
 
 Параметры VictoriaMetrics — `spec.values` в [apps/victoria-metrics/helmrelease.yaml](apps/victoria-metrics/helmrelease.yaml).
 
----
 
 ## Полезные команды
 
@@ -272,7 +331,6 @@ flux logs --all-namespaces --follow
 kubectl get pods -n vmks
 ```
 
----
 
 ## Устранение неполадок
 
@@ -283,7 +341,6 @@ kubectl get pods -n vmks
 | После миграции не применяется `base/` | В `FluxInstance.spec.sync.path` должно быть `./base`, если манифесты лежат под `base/` |
 | Нет метрик оператора | Service `flux-operator`, порт 8080; при необходимости `ServiceMonitor` |
 
----
 
 ## Метрики и Grafana
 
@@ -297,7 +354,6 @@ kubectl get pods -n vmks
 kubectl get secret vmks-grafana -n vmks -o jsonpath='{.data.admin-password}' | base64 --decode; echo
 ```
 
----
 
 ## Ссылки
 
