@@ -14,6 +14,5 @@ resources:
   - external-secrets
   - keda
   - vector
-  - gatekeeper
   - falco
   - descheduler

@@ -277,7 +277,6 @@ helm upgrade flux-operator oci://ghcr.io/controlplaneio-fluxcd/charts/flux-opera
 | KEDA | keda | Event-driven и метрик-based автомасштабирование |
 | Kubernetes Descheduler | descheduler | Перераспределение подов по политикам |
 | Reloader | reloader | Перезапуск workload при смене ConfigMap/Secret |
-| Gatekeeper | gatekeeper-system | Политики доступа (OPA Gatekeeper) |
 | Falco | falco | Обнаружение угроз в рантайме |
 | Argo Rollouts | argo-rollouts | Canary / blue-green и прогрессивные релизы |
 | Chaos Mesh | chaos-mesh | Хаос-инжиниринг и отказоустойчивость |
