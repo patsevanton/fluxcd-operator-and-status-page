@@ -7,14 +7,6 @@ spec:
   interval: 15m
   timeout: 10m
   targetNamespace: goldpinger
-  install:
-    strategy:
-      name: RetryOnFailure
-      retryInterval: 5m
-  upgrade:
-    strategy:
-      name: RetryOnFailure
-      retryInterval: 5m
   chart:
     spec:
       chart: goldpinger

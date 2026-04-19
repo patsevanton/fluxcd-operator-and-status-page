@@ -9,14 +9,8 @@ spec:
   targetNamespace: keda
   install:
     crds: CreateReplace
-    strategy:
-      name: RetryOnFailure
-      retryInterval: 5m
   upgrade:
     crds: CreateReplace
-    strategy:
-      name: RetryOnFailure
-      retryInterval: 5m
   chart:
     spec:
       chart: keda

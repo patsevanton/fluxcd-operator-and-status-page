@@ -7,14 +7,6 @@ spec:
   interval: 15m
   timeout: 15m
   targetNamespace: falco
-  install:
-    strategy:
-      name: RetryOnFailure
-      retryInterval: 5m
-  upgrade:
-    strategy:
-      name: RetryOnFailure
-      retryInterval: 5m
   chart:
     spec:
       chart: falco

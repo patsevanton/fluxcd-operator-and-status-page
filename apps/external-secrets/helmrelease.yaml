@@ -9,14 +9,8 @@ spec:
   targetNamespace: external-secrets
   install:
     crds: CreateReplace
-    strategy:
-      name: RetryOnFailure
-      retryInterval: 5m
   upgrade:
     crds: CreateReplace
-    strategy:
-      name: RetryOnFailure
-      retryInterval: 5m
   chart:
     spec:
       chart: external-secrets
