@@ -17,3 +17,12 @@ spec:
         namespace: flux-system
       interval: 15m
   releaseName: goldpinger
+  values:
+    ingress:
+      enabled: true
+      className: nginx
+      hosts:
+        - host: goldpinger.apatsev.org.ru
+          paths:
+            - path: /
+              pathType: Prefix
