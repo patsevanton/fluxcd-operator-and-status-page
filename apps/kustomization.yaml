@@ -6,3 +6,5 @@ resources:
   - flux-operator
   - chaos-mesh
   - goldpinger
+  - reloader
+  - argo-rollouts

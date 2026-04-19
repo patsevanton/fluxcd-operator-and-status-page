@@ -1,0 +1,4 @@
+resources:
+  - namespaces.yaml
+  - sources.yaml
+  - argo-rollouts-helmrelease.yaml
