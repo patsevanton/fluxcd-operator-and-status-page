@@ -4,6 +4,8 @@ metadata:
   name: opencost
   namespace: flux-system
 spec:
+  dependsOn:
+    - name: victoria-metrics
   interval: 10m
   path: ./apps/opencost
   prune: true
