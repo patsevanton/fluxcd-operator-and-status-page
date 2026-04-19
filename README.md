@@ -137,13 +137,15 @@ kubectl get secret vmks-grafana -n vmks -o jsonpath='{.data.admin-password}' | b
 
 #### 1. Установить Flux Operator
 
-В тот же namespace, где работает Flux (обычно `flux-system`):
+В тот же namespace, где работает Flux (обычно `flux-system`). **Первая установка и обновление чарта** — одной командой (`upgrade --install` не падает, если релиз уже есть; при необходимости зафиксируйте версию: `--version 0.47.0`):
 
 ```bash
-helm install flux-operator oci://ghcr.io/controlplaneio-fluxcd/charts/flux-operator \
+helm upgrade --install flux-operator oci://ghcr.io/controlplaneio-fluxcd/charts/flux-operator \
   --namespace flux-system \
   --create-namespace
 ```
+
+Проверить существующий релиз: `helm list -n flux-system`. Если нужно поставить заново с нуля: `helm uninstall flux-operator -n flux-system`, затем снова команда выше.
 
 Другие способы: [kubectl](https://fluxoperator.dev/docs/guides/install/#kubectl), [Terraform](https://fluxoperator.dev/docs/guides/install/#terraform), [CLI flux-operator](https://fluxoperator.dev/docs/guides/install/#flux-operator-cli).
 
