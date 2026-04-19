@@ -125,29 +125,6 @@ flux get kustomizations -A
 kubectl get secret vmks-grafana -n vmks -o jsonpath='{.data.admin-password}' | base64 --decode; echo
 ```
 
-### Проверка тем же чартом через Helm (без Flux)
-
-Чтобы сравнить поведение с `HelmRelease`, можно поставить **тот же** `victoria-metrics-k8s-stack` напрямую из репозитория VictoriaMetrics с теми же values, что в корневом [vmks-values.yaml](vmks-values.yaml) (ingress Grafana на `grafana.apatsev.org.ru`). Выполняйте из корня клонированного репозитория:
-
-```bash
-helm repo add vm https://victoriametrics.github.io/helm-charts/
-helm repo update
-helm install vmks vm/victoria-metrics-k8s-stack \
-  --namespace vmks \
-  --create-namespace \
-  --version 0.74.1 \
-  --values vmks-values.yaml
-```
-
-Проверка подов и снятие тестового релиза:
-
-```bash
-kubectl get pods -n vmks
-helm uninstall vmks --namespace vmks
-```
-
-Если в namespace `vmks` уже идёт синхронизация того же релиза через Flux, имена ресурсов могут конфликтовать: для чистой проверки Helm используйте другой `--namespace` или временно отключите соответствующий `HelmRelease`.
-
 ## 2. Переход со классического FluxCD на Flux Operator
 
 Этот раздел выполняется **только после** того, как установлен Flux CLI, выполнен `flux bootstrap` и в кластере работает классический Flux (и при желании уже развёрнут victoria-metrics-k8s-stack из части 1).
@@ -284,7 +261,7 @@ helm upgrade flux-operator oci://ghcr.io/controlplaneio-fluxcd/charts/flux-opera
 | ------------------------- | --------- | --------------------------------------------------------- |
 | VictoriaMetrics K8s Stack | vmks      | VMSingle (дефолт чарта), vmalert, vmagent, Alertmanager, Grafana |
 
-Параметры (реплики, лимиты, ingress) задаются в `spec.values` манифеста [apps/victoria-metrics/vmks-helmrelease.yaml](apps/victoria-metrics/vmks-helmrelease.yaml). Пример values для ручного `helm install` — [vmks-values.yaml](vmks-values.yaml) в корне.
+Параметры (реплики, лимиты, ingress) задаются в `spec.values` манифеста [apps/victoria-metrics/vmks-helmrelease.yaml](apps/victoria-metrics/vmks-helmrelease.yaml). Копия тех же values в корне: [vmks-values.yaml](vmks-values.yaml).
 
 ## Инфраструктура (Terraform)
 
