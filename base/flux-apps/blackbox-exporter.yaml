@@ -1,11 +1,11 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: apps
+  name: blackbox-exporter
   namespace: flux-system
 spec:
-  interval: 10m0s
-  path: ./apps
+  interval: 10m
+  path: ./apps/blackbox-exporter
   prune: true
   sourceRef:
     kind: GitRepository
