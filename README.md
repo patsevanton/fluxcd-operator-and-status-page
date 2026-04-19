@@ -12,12 +12,11 @@
 
 Сначала всегда полноценный «классический» FluxCD через CLI и bootstrap; переход на оператор — отдельный этап после этого.
 
-В репозитории описаны четыре части:
+В репозитории описаны три части:
 
 1. **Приложения через классический FluxCD** — классический GitOps: HelmRepository + HelmRelease.
 2. **Переход на Flux Operator** — замена классического FluxCD на управление через [Flux Operator](https://fluxoperator.dev/) (Mission Control, единая точка управления).
 3. **Обзор FluxCD Status Page** — единый отчёт о состоянии Flux (FluxReport), события, метрики и мониторинг.
-4. Нотификации через alertmanager.
 
 ## 1. Приложения через классический FluxCD
 
@@ -33,15 +32,14 @@
 
 ### Структура репозитория (Flux)
 
-- **`base/kustomization.yaml`** — точка входа kustomize для синхронизации из каталога **`base/`** (`--path=base`): подключает [base/flux-system/](base/flux-system/) и каталог [base/flux-apps/](base/flux-apps/) с отдельными Flux `Kustomization` на каждое приложение (`path: ./apps/<имя>`).
+- **`base/apps.yaml`** — манифесты `Kustomization` (Flux-ресурсы) для каждого отдельного приложения, указывающие на каталоги `apps/<имя>` (`path: ./apps/<имя>`).
 - **`base/flux-system/`** — компоненты Flux (`gotk-components.yaml`), [gotk-sync.yaml](base/flux-system/gotk-sync.yaml) (GitRepository + Kustomization с `path: ./base`).
-- **`apps/`** — манифесты приложений по подкаталогам; корневой [apps/kustomization.yaml](apps/kustomization.yaml) объединяет их для локальной сборки `kustomize build apps/`, в кластер же каждый подкаталог синхронизируется своим Flux `Kustomization` из `base/flux-apps/`. Для стека VictoriaMetrics:
+- **`apps/`** — манифесты приложений по подкаталогам; корневой [apps/kustomization.yaml](apps/kustomization.yaml) объединяет их для локальной сборки `kustomize build apps/`, в кластер же каждый подкаталог синхронизируется своим Flux `Kustomization` из `base/apps.yaml`. Для стека VictoriaMetrics:
   - [apps/victoria-metrics/sources.yaml](apps/victoria-metrics/sources.yaml) — `HelmRepository` VictoriaMetrics;
   - [apps/victoria-metrics/namespaces.yaml](apps/victoria-metrics/namespaces.yaml) — неймспейс `vmks`;
-  - [apps/victoria-metrics/helmrelease.yaml](apps/victoria-metrics/helmrelease.yaml) — `HelmRelease` victoria-metrics-k8s-stack (`spec.values`);
-  - [apps/victoria-metrics/kustomization.yaml](apps/victoria-metrics/kustomization.yaml) — сборка этого приложения.
+  - [apps/victoria-metrics/helmrelease.yaml](apps/victoria-metrics/helmrelease.yaml) — `HelmRelease` victoria-metrics-k8s-stack (`spec.values`).
 
-При первом **`flux bootstrap`** CLI по умолчанию создаёт каталог `flux-system/` в корне; в этом репозитории манифесты Flux лежат в **`base/flux-system/`** (уже в Git). До bootstrap вручную коммитятся пользовательские манифесты (`apps/`, `base/flux-apps/` и т.д.).
+При первом **`flux bootstrap`** CLI по умолчанию создаёт каталог `flux-system/` в корне; в этом репозитории манифесты Flux лежат в **`base/flux-system/`** (уже в Git). До bootstrap вручную коммитятся пользовательские манифесты (`apps/`, `base/apps.yaml` и т.д.).
 
 
 ### GitHub Personal Access Token (PAT) для bootstrap
@@ -211,7 +209,7 @@ flux get helmreleases -A
 
 Flux Operator даёт единую картину состояния Flux в кластере: отчёт (FluxReport), события и метрики Prometheus. Это удобно для мониторинга и поиска причин сбоев.
 
-**Status Page в браузере:** веб-интерфейс открывается по адресу [http://flux.apatsev.org.ru/](http://flux.apatsev.org.ru/). Host и `baseURL` заданы в [apps/flux-operator/helmrelease.yaml](apps/flux-operator/helmrelease.yaml) (`web.config.baseURL` и `ingress.hosts`).
+**Status Page в браузере:** веб-интерфейс открывается по адресу [http://flux.apatsev.org.ru/](http://flux.apatsev.org.ru/). Host и `baseURL` заданы в [apps/flux-operator/helmrelease.yaml](apps/flux-operator/helmrelease.yaml) (`web.config.baseURL` и `web.ingress.hosts`).
 
 ### FluxReport — единый отчёт о состоянии Flux
 
@@ -261,7 +259,7 @@ helm upgrade flux-operator oci://ghcr.io/controlplaneio-fluxcd/charts/flux-opera
 
 ## Развёрнутый стек (кратко)
 
-Состав приложений задаётся в [base/flux-apps/kustomization.yaml](base/flux-apps/kustomization.yaml) (отдельные Flux `Kustomization` на каждый каталог в `apps/`).
+Состав приложений задаётся в [base/apps.yaml](base/apps.yaml) (отдельные Flux `Kustomization` на каждый каталог в `apps/`).
 
 | Компонент | Namespace | Назначение |
 | --------- | --------- | ---------- |
