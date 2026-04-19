@@ -17,3 +17,14 @@ spec:
         namespace: flux-system
       interval: 15m
   releaseName: chaos-mesh
+  values:
+    dashboard:
+      rootUrl: http://chaos-mesh.apatsev.org.ru/
+      service:
+        type: ClusterIP
+      ingress:
+        enabled: true
+        ingressClassName: nginx
+        hosts:
+          - name: chaos-mesh.apatsev.org.ru
+            tls: false

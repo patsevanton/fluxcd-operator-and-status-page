@@ -59,3 +59,19 @@ resource "yandex_dns_recordset" "goldpinger" {
   ttl     = 200
   data    = [yandex_vpc_address.addr.external_ipv4_address[0].address]
 }
+
+resource "yandex_dns_recordset" "argo_rollouts" {
+  zone_id = yandex_dns_zone.apatsev-org-ru.id
+  name    = "argo-rollouts.apatsev.org.ru."
+  type    = "A"
+  ttl     = 200
+  data    = [yandex_vpc_address.addr.external_ipv4_address[0].address]
+}
+
+resource "yandex_dns_recordset" "chaos_mesh" {
+  zone_id = yandex_dns_zone.apatsev-org-ru.id
+  name    = "chaos-mesh.apatsev.org.ru."
+  type    = "A"
+  ttl     = 200
+  data    = [yandex_vpc_address.addr.external_ipv4_address[0].address]
+}
