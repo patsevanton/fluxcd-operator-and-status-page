@@ -13,7 +13,6 @@ resources:
   - cert-manager
   - external-secrets
   - keda
-  - opencost
   - vector
   - gatekeeper
   - falco

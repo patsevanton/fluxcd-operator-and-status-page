@@ -271,7 +271,6 @@ helm upgrade flux-operator oci://ghcr.io/controlplaneio-fluxcd/charts/flux-opera
 | Vector | vector | Сбор и маршрутизация логов в VictoriaLogs |
 | cert-manager | cert-manager | Автоматизация TLS-сертификатов |
 | External Secrets Operator | external-secrets | Секреты из внешних хранилищ |
-| OpenCost | opencost | Оценка стоимости ресурсов кластера |
 | Blackbox Exporter | blackbox-exporter | Blackbox-пробы (HTTP/TCP и др.) |
 | Goldpinger | goldpinger | Проверка сетевой связности между нодами |
 | Prometheus Adapter | prometheus-adapter | Custom Metrics API для HPA |

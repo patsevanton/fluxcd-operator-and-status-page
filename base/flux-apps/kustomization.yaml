@@ -12,7 +12,6 @@ resources:
   - gatekeeper.yaml
   - goldpinger.yaml
   - keda.yaml
-  - opencost.yaml
   - prometheus-adapter.yaml
   - reloader.yaml
   - vector.yaml
