@@ -25,3 +25,10 @@ spec:
         namespace: flux-system
       interval: 15m
   releaseName: opencost
+  values:
+    opencost:
+      prometheus:
+        internal:
+          serviceName: vmsingle-vmks-victoria-metrics-k8s-stack
+          namespaceName: vmks
+          port: 8428

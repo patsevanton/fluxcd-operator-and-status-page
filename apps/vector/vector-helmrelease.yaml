@@ -27,6 +27,10 @@ spec:
   releaseName: vector
   values:
     role: Agent
+    service:
+      enabled: false
+    serviceHeadless:
+      enabled: false
     customConfig:
       data_dir: /vector-data-dir
       api:
