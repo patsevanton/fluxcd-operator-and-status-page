@@ -1,4 +1,4 @@
 resources:
   - namespaces.yaml
   - sources.yaml
-  - opencost-helmrelease.yaml
+  - helmrelease.yaml

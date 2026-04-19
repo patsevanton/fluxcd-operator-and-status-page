@@ -1,4 +1,4 @@
 resources:
   - namespaces.yaml
   - sources.yaml
-  - descheduler-helmrelease.yaml
+  - helmrelease.yaml

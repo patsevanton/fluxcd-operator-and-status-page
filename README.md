@@ -38,7 +38,7 @@
 - **`apps/`** — манифесты приложений по подкаталогам; корневой [apps/kustomization.yaml](apps/kustomization.yaml) объединяет их для локальной сборки `kustomize build apps/`, в кластер же каждый подкаталог синхронизируется своим Flux `Kustomization` из `base/flux-apps/`. Для стека VictoriaMetrics:
   - [apps/victoria-metrics/sources.yaml](apps/victoria-metrics/sources.yaml) — `HelmRepository` VictoriaMetrics;
   - [apps/victoria-metrics/namespaces.yaml](apps/victoria-metrics/namespaces.yaml) — неймспейс `vmks`;
-  - [apps/victoria-metrics/vmks-helmrelease.yaml](apps/victoria-metrics/vmks-helmrelease.yaml) — `HelmRelease` victoria-metrics-k8s-stack (`spec.values`);
+  - [apps/victoria-metrics/helmrelease.yaml](apps/victoria-metrics/helmrelease.yaml) — `HelmRelease` victoria-metrics-k8s-stack (`spec.values`);
   - [apps/victoria-metrics/kustomization.yaml](apps/victoria-metrics/kustomization.yaml) — сборка этого приложения.
 
 При первом **`flux bootstrap`** CLI по умолчанию создаёт каталог `flux-system/` в корне; в этом репозитории манифесты Flux лежат в **`base/flux-system/`** (уже в Git). До bootstrap вручную коммитятся пользовательские манифесты (`apps/`, `base/flux-apps/` и т.д.).
@@ -283,7 +283,7 @@ helm upgrade flux-operator oci://ghcr.io/controlplaneio-fluxcd/charts/flux-opera
 | Argo Rollouts | argo-rollouts | Canary / blue-green и прогрессивные релизы |
 | Chaos Mesh | chaos-mesh | Хаос-инжиниринг и отказоустойчивость |
 
-Параметры VictoriaMetrics (реплики, лимиты, ingress) — в `spec.values` [apps/victoria-metrics/vmks-helmrelease.yaml](apps/victoria-metrics/vmks-helmrelease.yaml).
+Параметры VictoriaMetrics (реплики, лимиты, ingress) — в `spec.values` [apps/victoria-metrics/helmrelease.yaml](apps/victoria-metrics/helmrelease.yaml).
 
 ## Инфраструктура (Terraform)
 

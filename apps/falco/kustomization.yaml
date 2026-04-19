@@ -1,4 +1,4 @@
 resources:
   - namespaces.yaml
   - sources.yaml
-  - falco-helmrelease.yaml
+  - helmrelease.yaml

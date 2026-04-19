@@ -1,4 +1,4 @@
 resources:
   - namespaces.yaml
   - sources.yaml
-  - external-secrets-helmrelease.yaml
+  - helmrelease.yaml
