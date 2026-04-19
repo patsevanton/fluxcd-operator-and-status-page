@@ -1,0 +1,9 @@
+# Официальный Helm-репозиторий Goldpinger (Bloomberg).
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: goldpinger
+  namespace: flux-system
+spec:
+  interval: 24h
+  url: https://bloomberg.github.io/goldpinger

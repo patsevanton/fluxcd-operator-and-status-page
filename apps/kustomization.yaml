@@ -4,3 +4,5 @@ resources:
   - victoria-metrics
   - victoria-logs
   - flux-operator
+  - chaos-mesh
+  - goldpinger
