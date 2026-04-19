@@ -2,7 +2,7 @@
 
 ## Цель проекта
 
-Мигрировать управление кластером с **классического FluxCD** на **Flux Operator**: единая точка настройки через FluxInstance, использование Mission Control и сохранение GitOps. В качестве примера разворачивается стек мониторинга **victoria-metrics-k8s-stack** (VictoriaMetrics VMSingle по умолчанию чарта, Grafana, Alertmanager).
+Основная цель проекта — мигрировать управление кластером с **классического FluxCD** на **Flux Operator** (единая точка настройки через FluxInstance, использование Mission Control и сохранение GitOps), развернуть и продемонстрировать **FluxCD Status Page** (дашборд состояния), а также развернуть полноценный инфраструктурный стек и стек observability согласно требованиям проекта. Помимо самого Flux Operator, кластер включает развертывание широкого набора приложений, таких как VictoriaMetrics, VictoriaLogs, Vector, cert-manager, Argo Rollouts, Falco, KEDA, Chaos Mesh и других.
 
 ### Последовательность шагов (обязательный порядок)
 
