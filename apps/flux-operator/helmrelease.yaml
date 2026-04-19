@@ -28,7 +28,7 @@ spec:
     web:
       enabled: true
       config:
-        baseURL: https://flux.apatsev.org.ru
+        baseURL: http://flux.apatsev.org.ru/
       ingress:
         enabled: true
         className: nginx

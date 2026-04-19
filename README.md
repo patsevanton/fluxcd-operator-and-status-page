@@ -211,6 +211,8 @@ flux get helmreleases -A
 
 Flux Operator даёт единую картину состояния Flux в кластере: отчёт (FluxReport), события и метрики Prometheus. Это удобно для мониторинга и поиска причин сбоев.
 
+**Status Page в браузере:** веб-интерфейс открывается по адресу [http://flux.apatsev.org.ru/](http://flux.apatsev.org.ru/). Host и `baseURL` заданы в [apps/flux-operator/helmrelease.yaml](apps/flux-operator/helmrelease.yaml) (`web.config.baseURL` и `ingress.hosts`).
+
 ### FluxReport — единый отчёт о состоянии Flux
 
 Оператор автоматически создаёт ресурс **FluxReport** (имя `flux` в namespace `flux-system`). В отчёте отображаются:
