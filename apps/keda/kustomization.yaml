@@ -1,0 +1,4 @@
+resources:
+  - namespaces.yaml
+  - sources.yaml
+  - keda-helmrelease.yaml

@@ -1,0 +1,29 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: gatekeeper
+  namespace: flux-system
+spec:
+  interval: 15m
+  timeout: 15m
+  targetNamespace: gatekeeper-system
+  install:
+    crds: CreateReplace
+    strategy:
+      name: RetryOnFailure
+      retryInterval: 5m
+  upgrade:
+    crds: CreateReplace
+    strategy:
+      name: RetryOnFailure
+      retryInterval: 5m
+  chart:
+    spec:
+      chart: gatekeeper
+      version: "3.22.0"
+      sourceRef:
+        kind: HelmRepository
+        name: gatekeeper
+        namespace: flux-system
+      interval: 15m
+  releaseName: gatekeeper

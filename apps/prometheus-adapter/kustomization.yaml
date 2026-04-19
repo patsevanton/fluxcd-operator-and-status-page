@@ -1,0 +1,3 @@
+resources:
+  - namespaces.yaml
+  - prometheus-adapter-helmrelease.yaml

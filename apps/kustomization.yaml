@@ -8,3 +8,13 @@ resources:
   - goldpinger
   - reloader
   - argo-rollouts
+  - blackbox-exporter
+  - prometheus-adapter
+  - cert-manager
+  - external-secrets
+  - keda
+  - opencost
+  - vector
+  - gatekeeper
+  - falco
+  - descheduler
