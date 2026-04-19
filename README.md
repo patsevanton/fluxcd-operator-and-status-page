@@ -1,63 +1,47 @@
 # Миграция на FluxCD Operator и обзор FluxCD Status Page
 
-## Цель проекта
+GitOps-репозиторий для кластера Kubernetes: классический Flux CD (bootstrap), переход на **Flux Operator** с **FluxInstance**, веб-интерфейс **FluxCD Status Page** и набор приложений (observability, безопасность, релизы).
 
-Основная цель проекта — мигрировать управление кластером с **классического FluxCD** на **Flux Operator** (единая точка настройки через FluxInstance, использование Mission Control и сохранение GitOps), развернуть и продемонстрировать **FluxCD Status Page** (дашборд состояния), а также развернуть полноценный инфраструктурный стек и стек observability согласно требованиям проекта. Помимо самого Flux Operator, кластер включает развертывание широкого набора приложений, таких как VictoriaMetrics, VictoriaLogs, Vector, cert-manager, Argo Rollouts, Falco, KEDA, Chaos Mesh и других.
+## Возможности
 
-### Порядок развёртывания и разделы документа
+- **Классический Flux CD** — `HelmRepository`, `HelmRelease`, `Kustomization` из Git (`base/apps.yaml`, каталоги `apps/<имя>`).
+- **Flux Operator** — единая конфигурация через `FluxInstance`, опционально Mission Control.
+- **Status Page** — отчёт FluxReport, события, метрики Prometheus (см. раздел [FluxCD Status Page](#fluxcd-status-page)).
+- **Стек приложений** — VictoriaMetrics K8s Stack, VictoriaLogs, Vector, cert-manager, Argo Rollouts, Falco, KEDA, Chaos Mesh и др. (полный список — [ниже](#развёрнутый-стек)).
 
-Сначала установите **Flux CLI** на машину администратора (без него недоступны `flux bootstrap` и проверки `flux get …`), затем выполните **bootstrap** классического Flux в кластере и синхронизацию с Git. После этого — **миграция на Flux Operator** (оператор, `FluxInstance`). Полноценный классический Flux через CLI и bootstrap обязателен; переход на оператор — отдельный этап.
-
-Ниже по тексту три раздела, соответствующие этому пути:
-
-1. **[Приложения через классический FluxCD](#1-приложения-через-классический-fluxcd)** — GitOps через HelmRepository и HelmRelease.
-2. **[Переход со классического FluxCD на Flux Operator](#2-переход-со-классического-fluxcd-на-flux-operator)** — [Flux Operator](https://fluxoperator.dev/), Mission Control, единая точка управления.
-3. **[Обзор FluxCD Status Page](#3-обзор-fluxcd-status-page)** — FluxReport, события, метрики и мониторинг.
-
-## 1. Приложения через классический FluxCD
-
-Приложения разворачиваются классическими средствами FluxCD: источник чартов (HelmRepository), релиз (HelmRelease), Kustomization применяет манифесты из Git.
-
-### Предусловия
+## Предварительные требования
 
 - Чистый кластер Kubernetes.
-- **Установлен Flux CLI** (консольный `flux`): см. [Installing the Flux CLI](https://fluxcd.io/flux/installation/). Проверка: `flux version --client`.
-- Доступ к репозиторию Git (для `flux bootstrap`) и при необходимости PAT, как в разделе [GitHub Personal Access Token](#github-personal-access-token-pat-для-bootstrap).
+- **Flux CLI** — [Installing the Flux CLI](https://fluxcd.io/flux/installation/). Проверка: `flux version --client`.
+- Доступ к Git-репозиторию для `flux bootstrap`; при необходимости — PAT (раздел [PAT для bootstrap](#github-personal-access-token-pat-для-bootstrap)).
 
-После установки CLI следующий шаг — **bootstrap** (ниже), который ставит в кластер классический Flux; миграция на Flux Operator выполняется позже, по разделу [2](#2-переход-со-классического-fluxcd-на-flux-operator).
+## Структура репозитория
 
-### Структура репозитория (Flux)
+| Путь | Назначение |
+|------|------------|
+| [base/apps.yaml](base/apps.yaml) | Отдельные Flux `Kustomization` на каталоги `apps/<имя>` |
+| [base/flux-system/](base/flux-system/) | Компоненты Flux (`gotk-components.yaml`), [gotk-sync.yaml](base/flux-system/gotk-sync.yaml) — GitRepository + Kustomization с `path: ./base` |
+| [apps/](apps/) | Манифесты приложений; [apps/kustomization.yaml](apps/kustomization.yaml) — для локального `kustomize build apps/` |
 
-- **`base/apps.yaml`** — манифесты `Kustomization` (Flux-ресурсы) для каждого отдельного приложения, указывающие на каталоги `apps/<имя>` (`path: ./apps/<имя>`).
-- **`base/flux-system/`** — компоненты Flux (`gotk-components.yaml`), [gotk-sync.yaml](base/flux-system/gotk-sync.yaml) (GitRepository + Kustomization с `path: ./base`).
-- **`apps/`** — манифесты приложений по подкаталогам; корневой [apps/kustomization.yaml](apps/kustomization.yaml) объединяет их для локальной сборки `kustomize build apps/`, в кластер же каждый подкаталог синхронизируется своим Flux `Kustomization` из `base/apps.yaml`. Для стека VictoriaMetrics:
-  - [apps/victoria-metrics/sources.yaml](apps/victoria-metrics/sources.yaml) — `HelmRepository` VictoriaMetrics;
-  - [apps/victoria-metrics/namespaces.yaml](apps/victoria-metrics/namespaces.yaml) — неймспейс `vmks`;
-  - [apps/victoria-metrics/helmrelease.yaml](apps/victoria-metrics/helmrelease.yaml) — `HelmRelease` victoria-metrics-k8s-stack (`spec.values`).
+Пример стека VictoriaMetrics: [apps/victoria-metrics/sources.yaml](apps/victoria-metrics/sources.yaml) (`HelmRepository`), [namespaces.yaml](apps/victoria-metrics/namespaces.yaml), [helmrelease.yaml](apps/victoria-metrics/helmrelease.yaml).
 
-При первом **`flux bootstrap`** CLI по умолчанию создаёт каталог `flux-system/` в корне; в этом репозитории манифесты Flux лежат в **`base/flux-system/`** (уже в Git). До bootstrap вручную коммитятся пользовательские манифесты (`apps/`, `base/apps.yaml` и т.д.).
+При первом `flux bootstrap` CLI по умолчанию создаёт `flux-system/` в корне; здесь манифесты Flux уже лежат в **`base/flux-system/`**. Манифесты приложений и раскладку `base/` / `apps/` коммитят вручную до или после bootstrap.
 
+## 1. Классический Flux CD: bootstrap и приложения
 
 ### GitHub Personal Access Token (PAT) для bootstrap
 
-Flux при `flux bootstrap github` запрашивает доступ к репозиторию. Токен можно передать переменной `GITHUB_TOKEN` или ввести при запросе.
-
-**Создание PAT:**
+Для `flux bootstrap github` передайте токен через `GITHUB_TOKEN` или введите при запросе.
 
 ![Создание PAT (Fine-grained token)](docs/github-pat-creation.png)
 
-1. Откройте: [GitHub → Fine-grained tokens](https://github.com/settings/personal-access-tokens/new).
-2. **Repository access:** только нужный репозиторий (например `fluxcd-operator-and-status-page`).
-3. **Permissions:**
-   - **Contents** — Read and write (коммиты манифестов Flux).
-   - **Metadata** — Read-only.
-   - **Administration** — Read-only (доступ к API настроек репозитория).
+1. [GitHub → Fine-grained tokens](https://github.com/settings/personal-access-tokens/new).
+2. **Repository access** — только нужный репозиторий (например `fluxcd-operator-and-status-page`).
+3. **Permissions:** **Contents** — Read and write; **Metadata** — Read-only; **Administration** — Read-only.
 
-Скопируйте токен и при запросе вставьте в `Please enter your GitHub personal access token (PAT):`
+С `--token-auth` Flux хранит PAT в Secret в кластере; для PAT достаточно **Administration → Read-only**.
 
 ### Bootstrap
-
-Флаг **`--token-auth`** указывается в той же команде при запуске bootstrap (см. ниже). С ним Flux сохраняет PAT в Kubernetes-кластере (в Secret) и использует его для доступа к Git (вместо создания deploy key). Тогда для PAT достаточно **Administration → Read-only**.
 
 ```bash
 flux bootstrap github \
@@ -68,44 +52,20 @@ flux bootstrap github \
   --path=base
 ```
 
-Вывод примерно вот такой
+Ожидаемый результат: контроллеры Flux в `flux-system`, коммиты sync-манифестов, **GitRepository** + **Kustomization** на каталог **`base/`**.
+
+Пример вывода (фрагмент):
+
 ```
 Please enter your GitHub personal access token (PAT):
 ► connecting to github.com
 ► cloning branch "main" from Git repository "https://github.com/patsevanton/fluxcd-operator-and-status-page.git"
 ✔ cloned repository
-► generating component manifests
-✔ generated component manifests
-✔ committed component manifests to "main" ("f9688b07b0b68cf20be87f921af6ba15dd01bb3b")
-► pushing component manifests to "https://github.com/patsevanton/fluxcd-operator-and-status-page.git"
-► installing components in "flux-system" namespace
-✔ installed components
-✔ reconciled components
-► determining if source secret "flux-system/flux-system" exists
-► generating source secret
-► applying source secret "flux-system/flux-system"
-✔ reconciled source secret
-► generating sync manifests
-✔ generated sync manifests
-✔ committed sync manifests to "main" ("2fa415b4e32fd9331c9621e8e28429e0e3cf1a44")
-► pushing sync manifests to "https://github.com/patsevanton/fluxcd-operator-and-status-page.git"
-► applying sync manifests
-✔ reconciled sync configuration
-◎ waiting for GitRepository "flux-system/flux-system" to be reconciled
-✔ GitRepository reconciled successfully
-◎ waiting for Kustomization "flux-system/flux-system" to be reconciled
-✔ Kustomization reconciled successfully
-► confirming components are healthy
-✔ helm-controller: deployment ready
-✔ kustomize-controller: deployment ready
-✔ notification-controller: deployment ready
-✔ source-controller: deployment ready
+...
 ✔ all components are healthy
 ```
 
-При таком вызове Flux устанавливает в кластере свои компоненты (контроллеры), коммитит манифесты синхронизации и настраивает **GitRepository** + **Kustomization** на синхронизацию из каталога **`base/`** (`--path=base`). Манифесты приложений и раскладку `base/` / `apps/` Flux не генерирует — их добавляют вручную до или после bootstrap.
-
-### Проверка после реконсиляции
+### Проверка
 
 ```bash
 kubectl get pods -n vmks
@@ -119,19 +79,11 @@ flux get kustomizations -A
 kubectl get secret vmks-grafana -n vmks -o jsonpath='{.data.admin-password}' | base64 --decode; echo
 ```
 
-## 2. Переход со классического FluxCD на Flux Operator
+## 2. Переход на Flux Operator
 
-Этот раздел выполняется **только после** того, как установлен Flux CLI, выполнен `flux bootstrap` и в кластере работает классический Flux (и при желании уже развёрнуты приложения из части 1).
+Выполняйте после успешного bootstrap и работающего классического Flux. Манифесты приложений в Git не меняются; меняется способ установки и конфигурации компонентов Flux.
 
-После того как стек уже развёрнут через классический FluxCD (часть 1), кластер можно перевести на управление через **Flux Operator**: оператор устанавливает и обновляет компоненты Flux, даёт единую точку конфигурации (FluxInstance) и при необходимости — [Mission Control](https://fluxoperator.dev/docs/) (веб-интерфейс).
-
-Манифесты приложений (в т.ч. HelmRelease для vmks) остаются в Git; меняется только то, *кто* запускает Flux и откуда берётся конфигурация (из того же репозитория).
-
-### Шаги миграции
-
-#### 1. Установить Flux Operator
-
-В тот же namespace, где работает Flux (обычно `flux-system`). **Первая установка и обновление чарта** — одной командой (`upgrade --install` не падает, если релиз уже есть; при необходимости зафиксируйте версию: `--version 0.47.0`):
+### Установить Flux Operator
 
 ```bash
 helm upgrade --install flux-operator oci://ghcr.io/controlplaneio-fluxcd/charts/flux-operator \
@@ -139,22 +91,11 @@ helm upgrade --install flux-operator oci://ghcr.io/controlplaneio-fluxcd/charts/
   --create-namespace
 ```
 
-Проверить существующий релиз: `helm list -n flux-system`. Если нужно поставить заново с нуля: `helm uninstall flux-operator -n flux-system`, затем снова команда выше.
+Проверка: `helm list -n flux-system`. Другие способы: [kubectl](https://fluxoperator.dev/docs/guides/install/#kubectl), [Terraform](https://fluxoperator.dev/docs/guides/install/#terraform), [flux-operator CLI](https://fluxoperator.dev/docs/guides/install/#flux-operator-cli).
 
-Другие способы: [kubectl](https://fluxoperator.dev/docs/guides/install/#kubectl), [Terraform](https://fluxoperator.dev/docs/guides/install/#terraform), [CLI flux-operator](https://fluxoperator.dev/docs/guides/install/#flux-operator-cli).
+### Создать FluxInstance
 
-#### 2. Создать FluxInstance
-
-FluxInstance должен указывать на тот же репозиторий и путь, что и текущий bootstrap (в этом README — корень репозитория, `path: "."`).
-
-Создайте `flux-instance.yaml` и подставьте свой URL и ветку:
-
-```bash
-touch flux-instance.yaml
-# Добавьте манифест ниже, затем отредактируйте url, ref и при необходимости pullSecret
-```
-
-Пример минимальной конфигурации (публичный Git):
+Укажите тот же репозиторий и ветку, что и при bootstrap. Минимальный пример для публичного Git:
 
 ```yaml
 apiVersion: fluxcd.controlplane.io/v1
@@ -178,15 +119,13 @@ spec:
     path: "."
 ```
 
-Для приватного репозитория создайте secret в `flux-system` и укажите `spec.sync.pullSecret` (см. [документацию](https://fluxoperator.dev/docs/instance/sync/#sync-from-a-git-repository)).
-
-Применить:
+Сохраните в `flux-instance.yaml`, при необходимости отредактируйте `url`, `ref`, для приватного репозитория — `spec.sync.pullSecret` ([документация](https://fluxoperator.dev/docs/instance/sync/#sync-from-a-git-repository)).
 
 ```bash
 kubectl apply -f flux-instance.yaml
 ```
 
-#### 3. Проверить миграцию
+### Проверить миграцию
 
 ```bash
 kubectl -n flux-system get fluxinstance flux
@@ -195,27 +134,22 @@ flux get kustomizations -A
 flux get helmreleases -A
 ```
 
-После перехода управление Flux переходит к оператору; GitRepository и Kustomization для пути `path` создаются оператором. Рабочие нагрузки (в т.ч. victoria-metrics-k8s-stack в `vmks`) продолжают реконсилироваться из того же Git.
+### Очистка репозитория после миграции
 
-#### 4. Очистка репозитория и перенос FluxInstance в GitOps
+Удалите артефакты классического bootstrap, перенесите `flux-instance.yaml` в GitOps (например в `base/flux-system/`), обновите [base/flux-system/kustomization.yaml](base/flux-system/kustomization.yaml) — только `flux-instance.yaml`.
 
-После успешной миграции на Flux Operator старые манифесты классического Flux можно удалить из репозитория — компоненты Flux теперь управляются оператором. А сам манифест `flux-instance.yaml` лучше всего хранить в репозитории для самообновления (GitOps подхода).
+Если в `flux-instance` был `path: "."`, после переноса в дерево под `base/` задайте **`path: "./base"`**, как в прежнем `gotk-sync.yaml`, чтобы синхронизация шла из `base/`.
 
-Удалите манифесты классического Flux:
+Подробнее: [Flux Bootstrap Migration](https://fluxcd.control-plane.io/operator/flux-bootstrap-migration).
 
 ```bash
 git rm base/flux-system/gotk-components.yaml
 git rm base/flux-system/gotk-sync.yaml
-```
-
-Переместите `flux-instance.yaml` в каталог с конфигурацией системы:
-
-```bash
 mv flux-instance.yaml base/flux-system/
 git add base/flux-system/flux-instance.yaml
 ```
 
-Обновите файл `base/flux-system/kustomization.yaml`, оставив в ресурсах только `flux-instance.yaml`:
+Пример `kustomization.yaml`:
 
 ```yaml
 apiVersion: kustomize.config.k8s.io/v1beta1
@@ -224,53 +158,40 @@ resources:
 - flux-instance.yaml
 ```
 
-**Важно:** Если в вашем `flux-instance.yaml` был указан `path: "."`, не забудьте поменять его на `path: "./base"` (как это было настроено в удаленном `gotk-sync.yaml`), чтобы Flux продолжил корректно применять ваши манифесты из директории `base/`. После этого изменения закоммитьте и отправьте в Git.
+## FluxCD Status Page
 
-Подробнее о механизме очистки: [Flux Bootstrap Migration](https://fluxcd.control-plane.io/operator/flux-bootstrap-migration).
+После установки Flux Operator доступны **FluxReport**, события по `FluxInstance` и метрики Prometheus.
 
-## 3. Обзор FluxCD Status Page
+**Веб-интерфейс:** [http://flux.apatsev.org.ru/](http://flux.apatsev.org.ru/) — host и `baseURL` в [apps/flux-operator/helmrelease.yaml](apps/flux-operator/helmrelease.yaml).
 
-Flux Operator даёт единую картину состояния Flux в кластере: отчёт (FluxReport), события и метрики Prometheus. Это удобно для мониторинга и поиска причин сбоев.
+### FluxReport
 
-**Status Page в браузере:** веб-интерфейс открывается по адресу [http://flux.apatsev.org.ru/](http://flux.apatsev.org.ru/). Host и `baseURL` заданы в [apps/flux-operator/helmrelease.yaml](apps/flux-operator/helmrelease.yaml) (`web.config.baseURL` и `web.ingress.hosts`).
-
-### FluxReport — единый отчёт о состоянии Flux
-
-Оператор автоматически создаёт ресурс **FluxReport** (имя `flux` в namespace `flux-system`). В отчёте отображаются:
-
-- готовность компонентов Flux (source-controller, kustomize-controller, helm-controller и др.);
-- сведения о дистрибутиве (версия, registry);
-- статистика реконсилеров;
-- статус синхронизации кластера с Git.
-
-Отчёт обновляется по расписанию (по умолчанию раз в 5 минут). Просмотр в YAML:
+Ресурс `FluxReport` `flux` в `flux-system` (обновление по умолчанию раз в 5 минут):
 
 ```bash
 kubectl -n flux-system get fluxreport/flux -o yaml
 ```
 
-Принудительное обновление отчёта:
+Принудительное обновление:
 
 ```bash
 kubectl -n flux-system annotate --overwrite fluxreport/flux \
   reconcile.fluxcd.io/requestedAt="$(date +%s)"
 ```
 
-Подробнее: [Flux Report API](https://fluxoperator.dev/docs/crd/fluxreport).
+[Flux Report API](https://fluxoperator.dev/docs/crd/fluxreport).
 
-### События FluxInstance
-
-Оператор пишет события в API сервер Kubernetes по жизненному циклу FluxInstance. Просмотр:
+### События
 
 ```bash
 kubectl -n flux-system events --for fluxinstance/flux
 ```
 
-Через notification-controller можно настроить уведомления (Slack, Teams, Grafana и др.) по событиям FluxInstance — см. [документацию по Alert/Provider](https://fluxoperator.dev/docs/crd/provider).
+Уведомления (Slack, Teams и др.) — через notification-controller, [Provider/Alert](https://fluxoperator.dev/docs/crd/provider).
 
-### Метрики Prometheus
+### Метрики
 
-Flux Operator отдаёт метрики в формате Prometheus на порту **8080** (Service `flux-operator`). Доступны метрики по FluxInstance, ресурсам Flux (GitRepository, Kustomization, HelmRelease и т.д.) и контроллеру. При использовании Prometheus имеет смысл уменьшить интервал отчёта до 30s:
+Сервис `flux-operator`, порт **8080**. Пример уменьшения интервала отчёта:
 
 ```bash
 helm upgrade flux-operator oci://ghcr.io/controlplaneio-fluxcd/charts/flux-operator \
@@ -278,57 +199,59 @@ helm upgrade flux-operator oci://ghcr.io/controlplaneio-fluxcd/charts/flux-opera
   --set reporting.interval=30s
 ```
 
-На кластерах с Prometheus Operator можно создать ServiceMonitor для автоматического сбора метрик; в Helm-чарте оператора есть опция `serviceMonitor.create=true`. Подробнее: [Flux Monitoring and Reporting](https://fluxcd.control-plane.io/operator/monitoring).
+Для Prometheus Operator: `serviceMonitor.create=true`. Подробнее: [Flux Monitoring and Reporting](https://fluxcd.control-plane.io/operator/monitoring).
 
-## Развёрнутый стек (кратко)
+## Развёрнутый стек
 
-Состав приложений задаётся в [base/apps.yaml](base/apps.yaml) (отдельные Flux `Kustomization` на каждый каталог в `apps/`).
+Состав задаётся в [base/apps.yaml](base/apps.yaml).
 
 | Компонент | Namespace | Назначение |
-| --------- | --------- | ---------- |
-| Flux Operator | flux-system | Оператор Flux, Mission Control и [Status Page](http://flux.apatsev.org.ru/) |
+|-----------|------------|------------|
+| Flux Operator | flux-system | Оператор Flux, Mission Control, [Status Page](http://flux.apatsev.org.ru/) |
 | VictoriaMetrics K8s Stack | vmks | VMSingle, vmagent, vmalert, Alertmanager, Grafana |
-| VictoriaLogs | vlogs | Хранение и запрос логов (single-node) |
-| Vector | vector | Сбор и маршрутизация логов в VictoriaLogs |
-| cert-manager | cert-manager | Автоматизация TLS-сертификатов |
+| VictoriaLogs | vlogs | Логи (single-node) |
+| Vector | vector | Сбор логов в VictoriaLogs |
+| cert-manager | cert-manager | TLS |
 | External Secrets Operator | external-secrets | Секреты из внешних хранилищ |
-| Blackbox Exporter | blackbox-exporter | Blackbox-пробы (HTTP/TCP и др.) |
-| Goldpinger | goldpinger | Проверка сетевой связности между нодами |
+| Blackbox Exporter | blackbox-exporter | HTTP/TCP пробы |
+| Goldpinger | goldpinger | Связность между нодами |
 | Prometheus Adapter | prometheus-adapter | Custom Metrics API для HPA |
-| KEDA | keda | Event-driven и метрик-based автомасштабирование |
-| Kubernetes Descheduler | descheduler | Перераспределение подов по политикам |
-| Reloader | reloader | Перезапуск workload при смене ConfigMap/Secret |
-| Falco | falco | Обнаружение угроз в рантайме |
-| Argo Rollouts | argo-rollouts | Canary / blue-green и прогрессивные релизы |
-| Chaos Mesh | chaos-mesh | Хаос-инжиниринг и отказоустойчивость |
+| KEDA | keda | Автомасштабирование |
+| Kubernetes Descheduler | descheduler | Перераспределение подов |
+| Reloader | reloader | Перезапуск при смене ConfigMap/Secret |
+| Falco | falco | Runtime security |
+| Argo Rollouts | argo-rollouts | Canary / blue-green |
+| Chaos Mesh | chaos-mesh | Хаос-инжиниринг |
 
-Параметры VictoriaMetrics (реплики, лимиты, ingress) — в `spec.values` [apps/victoria-metrics/helmrelease.yaml](apps/victoria-metrics/helmrelease.yaml).
+Параметры VictoriaMetrics — `spec.values` в [apps/victoria-metrics/helmrelease.yaml](apps/victoria-metrics/helmrelease.yaml).
 
 ## Полезные команды
 
-- Статус Flux (источники, Kustomization, HelmRelease):
-  ```bash
-  flux get sources helm
-  flux get helmreleases -A
-  flux get kustomizations -A
-  ```
-- Логи контроллеров Flux:
-  ```bash
-  flux logs --all-namespaces --follow
-  ```
-- Проверка подов и релизов:
-  ```bash
-  kubectl get pods -n vmks
-  ```
+```bash
+flux get sources helm
+flux get helmreleases -A
+flux get kustomizations -A
+flux logs --all-namespaces --follow
+kubectl get pods -n vmks
+```
+
+## Устранение неполадок
+
+| Симптом | Что проверить |
+|---------|----------------|
+| `GitRepository` / `Kustomization` не Ready | `flux get sources git -A`, `kubectl describe gitrepository -n flux-system`, сеть и права PAT / deploy key |
+| HelmRelease завис | `flux get helmreleases -A`, логи `helm-controller`, значения в `HelmRelease` |
+| После миграции не применяется `base/` | В `FluxInstance.spec.sync.path` должно быть `./base`, если манифесты лежат под `base/` |
+| Нет метрик оператора | Service `flux-operator`, порт 8080; при необходимости `ServiceMonitor` |
 
 ## Ссылки
 
-- [Installing the Flux CLI](https://fluxcd.io/flux/installation/) (консольный `flux` — шаг до bootstrap)
+- [Installing the Flux CLI](https://fluxcd.io/flux/installation/)
 - [Flux Documentation](https://fluxcd.io/flux/)
 - [Flux Get Started](https://fluxcd.io/flux/get-started/)
-- [Manage Helm Releases (Flux)](https://fluxcd.io/flux/guides/helmreleases/)
+- [Manage Helm Releases](https://fluxcd.io/flux/guides/helmreleases/)
 - [Flux Operator — Installation](https://fluxoperator.dev/docs/guides/install/)
 - [Flux Operator — Cluster sync (GitRepository)](https://fluxoperator.dev/docs/instance/sync/)
-- [Flux Bootstrap Migration (to Flux Operator)](https://fluxcd.control-plane.io/operator/flux-bootstrap-migration)
-- [Flux Monitoring and Reporting (Status Page, FluxReport)](https://fluxcd.control-plane.io/operator/monitoring)
+- [Flux Bootstrap Migration](https://fluxcd.control-plane.io/operator/flux-bootstrap-migration)
+- [Flux Monitoring and Reporting](https://fluxcd.control-plane.io/operator/monitoring)
 - [VictoriaMetrics Helm Charts](https://github.com/VictoriaMetrics/helm-charts)

@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "skills": {
+    "content-writer": {
+      "source": "Shubhamsaboo/awesome-llm-apps",
+      "sourceType": "github",
+      "computedHash": "6e118e078a4c8d15932d7562141adda13e6630235caaf8f7422f902def6ca828"
+    },
+    "editor": {
+      "source": "Shubhamsaboo/awesome-llm-apps",
+      "sourceType": "github",
+      "computedHash": "6956636eab9a2a0f102926ba7ac0cdaffa5fdccb8061a428aec1ae0874b8820b"
+    },
+    "technical-writer": {
+      "source": "Shubhamsaboo/awesome-llm-apps",
+      "sourceType": "github",
+      "computedHash": "e1ccd2334efd9b2137844568db30b0a1c6679404b474c216476c59e22ad08c28"
+    }
+  }
+}
