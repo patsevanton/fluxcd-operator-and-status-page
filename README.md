@@ -164,6 +164,19 @@ resources:
 
 **Веб-интерфейс:** [http://flux.apatsev.org.ru/](http://flux.apatsev.org.ru/) — host и `baseURL` в [apps/flux-operator/helmrelease.yaml](apps/flux-operator/helmrelease.yaml).
 
+### Скриншоты (Flux CD dashboard / Status Page)
+
+Файлы кладите в [docs/screenshots/](docs/screenshots/).
+
+| Описание | Файл |
+|----------|------|
+| Status Page — обзор | `docs/screenshots/flux-status-page-overview.png` |
+| Dashboard / Mission Control (если включён) | `docs/screenshots/flux-dashboard.png` |
+
+![FluxCD Status Page — обзор](docs/screenshots/flux-status-page-overview.png)
+
+![Flux CD dashboard / Mission Control](docs/screenshots/flux-dashboard.png)
+
 ### FluxReport
 
 Ресурс `FluxReport` `flux` в `flux-system` (обновление по умолчанию раз в 5 минут):
