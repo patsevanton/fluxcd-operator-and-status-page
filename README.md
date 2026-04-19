@@ -26,7 +26,7 @@
 | [base/flux-system/](base/flux-system/) | Компоненты Flux (`gotk-components.yaml`), [gotk-sync.yaml](base/flux-system/gotk-sync.yaml) — `GitRepository` + `Kustomization` с `path: ./base` |
 | [apps/](apps/) | Манифесты приложений; [apps/kustomization.yaml](apps/kustomization.yaml) — для локального `kustomize build apps/` |
 
-**Нюанс раскладки:** при первом `flux bootstrap` CLI по умолчанию кладёт `flux-system/` в корень репозитория; здесь манифесты Flux уже лежат в **`base/flux-system/`**. Содержимое `base/` и `apps/` вы коммитите в Git до или после bootstrap — главное, чтобы путь в bootstrap совпадал с тем, что ожидает кластер.
+**Нюанс раскладки:** при первом `flux bootstrap` CLI по умолчанию кладёт `flux-system/` в корень репозитория. Содержимое `base/` и `apps/` вы коммитите в Git до или после bootstrap — главное, чтобы путь в bootstrap совпадал с тем, что ожидает кластер.
 
 
 ## Часть 1. Классический Flux: bootstrap и приложения
