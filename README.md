@@ -261,11 +261,29 @@ helm upgrade flux-operator oci://ghcr.io/controlplaneio-fluxcd/charts/flux-opera
 
 ## Развёрнутый стек (кратко)
 
-| Компонент                 | Namespace | Назначение                                                |
-| ------------------------- | --------- | --------------------------------------------------------- |
-| VictoriaMetrics K8s Stack | vmks      | VMSingle (дефолт чарта), vmalert, vmagent, Alertmanager, Grafana |
+Состав приложений задаётся в [base/flux-apps/kustomization.yaml](base/flux-apps/kustomization.yaml) (отдельные Flux `Kustomization` на каждый каталог в `apps/`).
 
-Параметры (реплики, лимиты, ingress) задаются в `spec.values` манифеста [apps/victoria-metrics/vmks-helmrelease.yaml](apps/victoria-metrics/vmks-helmrelease.yaml). Копия тех же values в корне: [vmks-values.yaml](vmks-values.yaml).
+| Компонент | Namespace | Назначение |
+| --------- | --------- | ---------- |
+| Flux Operator | flux-system | Оператор Flux, Mission Control и [Status Page](http://flux.apatsev.org.ru/) |
+| VictoriaMetrics K8s Stack | vmks | VMSingle, vmagent, vmalert, Alertmanager, Grafana |
+| VictoriaLogs | vlogs | Хранение и запрос логов (single-node) |
+| Vector | vector | Сбор и маршрутизация логов в VictoriaLogs |
+| cert-manager | cert-manager | Автоматизация TLS-сертификатов |
+| External Secrets Operator | external-secrets | Секреты из внешних хранилищ |
+| OpenCost | opencost | Оценка стоимости ресурсов кластера |
+| Blackbox Exporter | blackbox-exporter | Blackbox-пробы (HTTP/TCP и др.) |
+| Goldpinger | goldpinger | Проверка сетевой связности между нодами |
+| Prometheus Adapter | prometheus-adapter | Custom Metrics API для HPA |
+| KEDA | keda | Event-driven и метрик-based автомасштабирование |
+| Kubernetes Descheduler | descheduler | Перераспределение подов по политикам |
+| Reloader | reloader | Перезапуск workload при смене ConfigMap/Secret |
+| Gatekeeper | gatekeeper-system | Политики доступа (OPA Gatekeeper) |
+| Falco | falco | Обнаружение угроз в рантайме |
+| Argo Rollouts | argo-rollouts | Canary / blue-green и прогрессивные релизы |
+| Chaos Mesh | chaos-mesh | Хаос-инжиниринг и отказоустойчивость |
+
+Параметры VictoriaMetrics (реплики, лимиты, ingress) — в `spec.values` [apps/victoria-metrics/vmks-helmrelease.yaml](apps/victoria-metrics/vmks-helmrelease.yaml).
 
 ## Инфраструктура (Terraform)
 
