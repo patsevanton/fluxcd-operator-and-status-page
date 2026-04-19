@@ -283,14 +283,6 @@ helm upgrade flux-operator oci://ghcr.io/controlplaneio-fluxcd/charts/flux-opera
 
 Параметры VictoriaMetrics (реплики, лимиты, ingress) — в `spec.values` [apps/victoria-metrics/helmrelease.yaml](apps/victoria-metrics/helmrelease.yaml).
 
-## Инфраструктура (Terraform)
-
-- `k8s.tf` — managed Kubernetes cluster (Yandex Cloud);
-- `net.tf` — VPC и подсети;
-- `ip-dns.tf` — внешний IP при необходимости.
-
-После изменений: `terraform plan` / `terraform apply`. Подключение к кластеру — по команде из output (`yc managed-kubernetes cluster get-credentials ...`).
-
 ## Полезные команды
 
 - Статус Flux (источники, Kustomization, HelmRelease):
