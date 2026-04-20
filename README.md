@@ -66,6 +66,12 @@ Please enter your GitHub personal access token (PAT):
 ✔ all components are healthy
 ```
 
+Перед проверкой после bootstrap скачайте изменения из Git-репозитория:
+
+```bash
+git pull
+```
+
 ### Проверка после bootstrap
 
 Flux уже синхронизирует ваши приложения. `flux get all -A` показывает состояние всех ресурсов FluxCD.
