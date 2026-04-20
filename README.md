@@ -300,6 +300,7 @@ git add base/flux-system/kustomization.yaml base/flux-system/flux-instance.yaml
 | Главная страница — верхний блок (overview) | `screenshots/flux-status-page-main-overview.png` |
 | Главная страница — блок Flux Reconcilers | `screenshots/flux-status-page-main-reconcilers.png` |
 | Resources — failed state | `screenshots/flux-status-page-resources-failed.png` |
+| Events — список событий Flux | `screenshots/flux-status-page-events.png` |
 
 #### Главная страница — верхний блок (overview)
 
@@ -318,6 +319,12 @@ git add base/flux-system/kustomization.yaml base/flux-system/flux-instance.yaml
 Пример экрана с ошибками в ресурсах.
 
 ![FluxCD Status Page — resources (failed)](screenshots/flux-status-page-resources-failed.png)
+
+#### Events — список событий Flux
+
+Экран с лентой событий Flux и фильтрами по namespace, kind и severity.
+
+![FluxCD Status Page — events](screenshots/flux-status-page-events.png)
 
 ### FluxReport
 
