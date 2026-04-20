@@ -17,7 +17,7 @@
 | Путь | Роль |
 |------|------|
 | [base/kustomization.yaml](base/kustomization.yaml) | Корневой kustomize: `flux-system` + [apps.yaml](base/apps.yaml) |
-| [base/apps.yaml](base/apps.yaml) | Flux `Kustomization`: **flux-operator**, **victoria-metrics** |
+| [base/apps.yaml](base/apps.yaml) | Flux `Kustomization`: **victoria-metrics** и др.; **Flux Operator** не подключается здесь — ставится вручную по [части 2](#часть-2-переход-на-flux-operator) |
 | [base/flux-system/](base/flux-system/) | Классический bootstrap: `gotk-components.yaml`, [gotk-sync.yaml](base/flux-system/gotk-sync.yaml). После перехода на оператор — [flux-instance.yaml](base/flux-system/flux-instance.yaml) |
 | [apps/](apps/) | [apps/kustomization.yaml](apps/kustomization.yaml) — локальный `kustomize build apps/` |
 
@@ -36,7 +36,7 @@
 
 Для `flux bootstrap github` токен передаётся через `GITHUB_TOKEN` или вводится в интерактиве.
 
-![Создание PAT (Fine-grained token)](docs/github-pat-creation.png)
+![Создание PAT (Fine-grained token)](screenshots/github-pat-creation.png)
 
 1. [GitHub → Fine-grained tokens](https://github.com/settings/personal-access-tokens/new).
 2. **Repository access** — только нужный репозиторий (например `fluxcd-operator-and-status-page`).
@@ -86,6 +86,8 @@ flux get kustomizations -A
 ## Часть 2. Переход на Flux Operator
 
 ### Установка Flux Operator
+
+Развёртывание оператора **не** входит в автоматическую синхронизацию `base/apps.yaml`: выполните шаги ниже вручную из корня репозитория (они добавят `Kustomization` `flux-operator` и каталог `apps/flux-operator/`).
 
 Создайте файлы из корня репозитория:
 
@@ -243,16 +245,16 @@ git add base/flux-system/kustomization.yaml base/flux-system/flux-instance.yaml
 
 ### Скриншоты
 
-Файлы удобно складывать в [docs/screenshots/](docs/screenshots/).
+Файлы удобно складывать в [screenshots/](screenshots/).
 
 | Описание | Файл |
 |----------|------|
-| Status Page — обзор | `docs/screenshots/flux-status-page-overview.png` |
-| Dashboard / Mission Control (если включён) | `docs/screenshots/flux-dashboard.png` |
+| Status Page — обзор | `screenshots/flux-status-page-overview.png` |
+| Dashboard / Mission Control (если включён) | `screenshots/flux-dashboard.png` |
 
-![FluxCD Status Page — обзор](docs/screenshots/flux-status-page-overview.png)
+![FluxCD Status Page — обзор](screenshots/flux-status-page-overview.png)
 
-![Flux CD dashboard / Mission Control](docs/screenshots/flux-dashboard.png)
+![Flux CD dashboard / Mission Control](screenshots/flux-dashboard.png)
 
 ### FluxReport
 
@@ -290,7 +292,7 @@ kubectl -n flux-system events --for fluxinstance/flux
 
 | Компонент | Namespace | Назначение |
 |-----------|------------|------------|
-| Flux Operator | flux-system | Оператор Flux, Mission Control, [Status Page](http://flux.apatsev.org.ru/) |
+| Flux Operator | flux-system | Оператор Flux, Mission Control, [Status Page](http://flux.apatsev.org.ru/) — [установка вручную](#часть-2-переход-на-flux-operator), не через закоммиченный `base/apps.yaml` |
 | VictoriaMetrics K8s Stack | vmks | VMSingle, vmagent, vmalert, Alertmanager, Grafana |
 
 Параметры чарта — `spec.values` в [apps/victoria-metrics/helmrelease.yaml](apps/victoria-metrics/helmrelease.yaml).
