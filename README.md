@@ -325,7 +325,27 @@ git add base/flux-system/kustomization.yaml base/flux-system/flux-instance.yaml
 Ресурс `FluxReport` `flux` в `flux-system` (обновление по умолчанию раз в 5 минут):
 
 ```bash
-kubectl -n flux-system get fluxreport/flux -o yaml
+kubectl -n flux-system get fluxreport/flux -o yaml | head -n 20
+apiVersion: fluxcd.controlplane.io/v1
+kind: FluxReport
+metadata:
+  annotations:
+    reconcile.fluxcd.io/requestedAt: "1776695025"
+  creationTimestamp: "2026-04-20T14:12:54Z"
+  generation: 5
+  name: flux
+  namespace: flux-system
+  resourceVersion: "15876"
+  uid: e4135b2f-95a5-41b7-970f-61273b8a3b46
+spec:
+  cluster:
+    nodes: 3
+    platform: linux/amd64
+    serverVersion: v1.32.1
+  components:
+  - image: ghcr.io/fluxcd/helm-controller:v1.5.3@sha256:b150af0cd7a501dafe2374b1d22c39abf0572465df4fa1fb99b37927b0d95d75
+    name: helm-controller
+    ready: true
 ```
 
 Принудительное обновление:
