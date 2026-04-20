@@ -354,25 +354,52 @@ spec:
 
 ```bash
 kubectl -n flux-system events --for fluxinstance/flux
+LAST SEEN   TYPE     REASON                    OBJECT              MESSAGE
+3m22s       Normal   Progressing               FluxInstance/flux   Installing revision v2.8.5@sha256:df269637e1cbd79f25263d77f754ec782afb780ad197f4732771f661ceb73f3f
+2m33s       Normal   ReconciliationSucceeded   FluxInstance/flux   Flux v2.8.5 installed
+CustomResourceDefinition/alerts.notification.toolkit.fluxcd.io configured
+CustomResourceDefinition/buckets.source.toolkit.fluxcd.io configured
+CustomResourceDefinition/externalartifacts.source.toolkit.fluxcd.io configured
+CustomResourceDefinition/gitrepositories.source.toolkit.fluxcd.io configured
+CustomResourceDefinition/helmcharts.source.toolkit.fluxcd.io configured
+CustomResourceDefinition/helmreleases.helm.toolkit.fluxcd.io configured
+CustomResourceDefinition/helmrepositories.source.toolkit.fluxcd.io configured
+CustomResourceDefinition/kustomizations.kustomize.toolkit.fluxcd.io configured
+CustomResourceDefinition/ocirepositories.source.toolkit.fluxcd.io configured
+CustomResourceDefinition/providers.notification.toolkit.fluxcd.io configured
+CustomResourceDefinition/receivers.notification.toolkit.fluxcd.io configured
+Namespace/flux-system configured
+ClusterRole/crd-controller-flux-system configured
+ClusterRole/flux-edit-flux-system configured
+ClusterRole/flux-view-flux-system configured
+ClusterRoleBinding/cluster-reconciler-flux-system configured
+ClusterRoleBinding/crd-controller-flux-system configured
+ResourceQuota/flux-system/critical-pods-flux-system configured
+ServiceAccount/flux-system/helm-controller configured
+ServiceAccount/flux-system/kustomize-controller configured
+ServiceAccount/flux-system/notification-controller configured
+ServiceAccount/flux-system/source-controller configured
+Service/flux-system/notification-controller configured
+Service/flux-system/source-controller configured
+Service/flux-system/webhook-receiver configured
+Deployment/flux-system/helm-controller configured
+Deployment/flux-system/kustomize-controller configured
+Deployment/flux-system/notification-controller configured
+Deployment/flux-system/source-controller configured
+Kustomization/flux-system/flux-system configured
+NetworkPolicy/flux-system/allow-egress configured
+NetworkPolicy/flux-system/allow-scraping configured
+NetworkPolicy/flux-system/allow-webhooks configured
+GitRepository/flux-system/flux-system configured
+2m33s       Normal   ReconciliationSucceeded   FluxInstance/flux   Reconciliation finished in 50s
+10s         Normal   ReconciliationSucceeded   FluxInstance/flux   Reconciliation finished in 2s
 ```
 
-Уведомления (Slack, Teams и др.) — через notification-controller, [Provider/Alert](https://fluxoperator.dev/docs/crd/provider).
+Уведомления (Slack, Teams и др.) можно настроить через `notification-controller` и CRD `Provider/Alert`. Подробнее: [Provider/Alert](https://fluxoperator.dev/docs/crd/provider).
 
 ### Метрики
 
 Для Prometheus Operator: `serviceMonitor.create=true` в `values`. Подробнее: [Flux Monitoring and Reporting](https://fluxcd.control-plane.io/operator/monitoring).
-
-## Полезные команды
-
-```bash
-flux get sources helm
-flux get helmreleases -A
-flux get kustomizations -A
-flux logs --all-namespaces --follow
-kubectl get pods -n flux-system
-kubectl get pods -n vmks
-```
-
 
 ## Устранение неполадок
 
