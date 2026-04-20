@@ -200,6 +200,12 @@ EOF
 
 Пока CRD `FluxInstance` есть только после установки оператора, первый раз создайте манифест и примените его вручную (после миграции его можно включить в [base/flux-system/kustomization.yaml](base/flux-system/kustomization.yaml), см. ниже):
 
+Важно про источник управления Flux на этапах миграции:
+
+- До переключения `base/flux-system/kustomization.yaml` продолжает ссылаться на `gotk-components.yaml` и `gotk-sync.yaml`, поэтому Flux всё ещё управляется классическим bootstrap.
+- После создания и применения `base/flux-system/flux-instance.yaml` ресурс `FluxInstance` уже начинает управлять жизненным циклом Flux.
+- Полный переход в Git фиксируется после очистки `gotk-*` и обновления `base/flux-system/kustomization.yaml` на `flux-instance.yaml`.
+
 ```bash
 mkdir -p base/flux-system
 
