@@ -13,7 +13,7 @@ spec:
   path: ./apps/victoria-metrics
   prune: true
   wait: true
-  timeout: 20m
+  timeout: 15m
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
