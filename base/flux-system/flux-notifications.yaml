@@ -9,7 +9,7 @@ metadata:
 spec:
   type: alertmanager
   # VMAlertmanager CR: vmks-victoria-metrics-k8s-stack (release vmks, chart victoria-metrics-k8s-stack), ns vmks
-  address: http://vmks-victoria-metrics-k8s-stack.vmks.svc.cluster.local:9093/api/v2/alerts/
+  address: http://vmalertmanager-vmks-victoria-metrics-k8s-stack.vmks.svc.cluster.local:9093/api/v2/alerts
 ---
 apiVersion: notification.toolkit.fluxcd.io/v1beta3
 kind: Alert
