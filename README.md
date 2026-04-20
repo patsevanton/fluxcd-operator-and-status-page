@@ -137,9 +137,9 @@ spec:
                 pathType: Prefix
 ```
 
-`Kustomization` **flux-operator** уже описан в [base/apps.yaml](base/apps.yaml) и указывает на `./apps/flux-operator-template`. Закоммитьте изменения и дождитесь синхронизации: `flux get kustomizations -n flux-system`, `flux get helmreleases -n flux-system`.
+Закоммитьте изменения и дождитесь синхронизации: `flux get kustomizations -n flux-system`, `flux get helmreleases -n flux-system`.
 
-Проверка: `flux get helmreleases -n flux-system` (релиз `flux-operator`). Версия чарта и `values` — в [apps/flux-operator-template/helmrelease.yaml](apps/flux-operator-template/helmrelease.yaml).
+Проверка: `flux get helmreleases -n flux-system` (релиз `flux-operator`).
 
 Установка оператора не через этот репозиторий — в [документации Flux Operator](https://fluxoperator.dev/docs/guides/install/) (Helm, kubectl, Terraform и др.).
 
