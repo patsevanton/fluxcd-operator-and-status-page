@@ -66,7 +66,7 @@ Please enter your GitHub personal access token (PAT):
 ✔ all components are healthy
 ```
 
-Перед проверкой после bootstrap скачайте изменения из Git-репозитория:
+flux bootstrap создаст директорию base/flux-system с base/flux-system/gotk-components.yaml и base/flux-system/gotk-components.yaml. Скачайте изменения из Git-репозитория:
 
 ```bash
 git pull
@@ -346,18 +346,6 @@ kubectl -n flux-system events --for fluxinstance/flux
 
 Для Prometheus Operator: `serviceMonitor.create=true` в `values`. Подробнее: [Flux Monitoring and Reporting](https://fluxcd.control-plane.io/operator/monitoring).
 
-## Пример установки приложений через FluxCD
-
-Состав задаётся в [base/apps.yaml](base/apps.yaml).
-
-| Компонент | Namespace | Назначение |
-|-----------|------------|------------|
-| Flux Operator | flux-system | Оператор Flux, Mission Control, [Status Page](http://flux.apatsev.org.ru/); зависит от `prometheus-crds` для `ServiceMonitor` |
-| VictoriaMetrics K8s Stack | vmks | VMSingle, vmagent, vmalert, Alertmanager, Grafana |
-
-Параметры чарта — `spec.values` в [apps/victoria-metrics/helmrelease.yaml](apps/victoria-metrics/helmrelease.yaml).
-
-
 ## Полезные команды
 
 ```bash
@@ -391,6 +379,15 @@ kubectl get pods -n vmks
 ```bash
 kubectl get secret vmks-grafana -n vmks -o jsonpath='{.data.admin-password}' | base64 --decode; echo
 ```
+
+### Установка FluxCD dashboard в Grafana
+
+Готовые дашборды FluxCD можно добавить в Grafana двумя способами:
+
+- Через UI Grafana: **Dashboards → Import** и импорт JSON из [flux2-monitoring-example](https://github.com/fluxcd/flux2-monitoring-example/tree/main/monitoring/configs/dashboards).
+- Через [Grafana Dashboard ID 16714 (Flux2)](https://grafana.com/grafana/dashboards/16714-flux2/).
+
+Если метрики Flux уже собираются (через `ServiceMonitor`), дашборды начнут показывать данные сразу после импорта.
 
 ## Ссылки
 
