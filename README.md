@@ -18,7 +18,7 @@
 |------|------|
 | [base/kustomization.yaml](base/kustomization.yaml) | Корневой kustomize: `flux-system` + [apps.yaml](base/apps.yaml) |
 | [base/apps.yaml](base/apps.yaml) | Flux `Kustomization`: **victoria-metrics**, **prometheus-crds**, **flux-operator** |
-| [base/flux-system/](base/flux-system/) | Классический bootstrap: `gotk-components.yaml`, [gotk-sync.yaml](base/flux-system/gotk-sync.yaml). После перехода на оператор — [flux-instance.yaml](base/flux-system/flux-instance.yaml) |
+| [base/flux-system/](base/flux-system/) | Классический bootstrap: `gotk-components.yaml`, [gotk-sync.yaml](base/flux-system/gotk-sync.yaml). После перехода на оператор — [flux-instance.yaml](base/flux-system/flux-instance.yaml), уведомления — [flux-notifications.yaml](base/flux-system/flux-notifications.yaml) |
 | [apps/](apps/) | [apps/kustomization.yaml](apps/kustomization.yaml) — локальный `kustomize build apps/` |
 
 **Нюанс раскладки:** при первом `flux bootstrap` CLI по умолчанию кладёт `flux-system/` в корень репозитория. Содержимое `base/` и `apps/` вы коммитите в Git до или после bootstrap — главное, чтобы путь в bootstrap совпадал с тем, что ожидает кластер.
@@ -396,6 +396,62 @@ GitRepository/flux-system/flux-system configured
 ```
 
 Уведомления (Slack, Teams и др.) можно настроить через `notification-controller` и CRD `Provider/Alert`. Подробнее: [Provider/Alert](https://fluxoperator.dev/docs/crd/provider).
+
+### `base/flux-system/flux-notifications.yaml`: Flux → Alertmanager
+
+Файл подключается через [base/flux-system/kustomization.yaml](base/flux-system/kustomization.yaml) и создаёт в `flux-system`:
+
+- **`Provider`** `alertmanager` — тип `alertmanager`, адрес HTTP API VMAlertmanager из [VictoriaMetrics K8s Stack](https://github.com/VictoriaMetrics/helm-charts/tree/master/charts/victoria-metrics-k8s-stack) (в манифесте задан сервис релиза `vmks-victoria-metrics-k8s-stack` в namespace `vmks`).
+- **`Alert`** `flux-to-alertmanager` — события с **severity `error`** от перечисленных источников (`GitRepository`, `OCIRepository`, `HelmRepository`, `HelmChart`, `HelmRelease`, `Kustomization`) отправляются в этот провайдер.
+
+Нужны работающие **notification-controller** (в [FluxInstance](base/flux-system/flux-instance.yaml) он в `spec.components`) и **VMAlertmanager** по адресу из `Provider.spec.address`, иначе доставка алертов не состоится.
+
+#### Проверка, что манифест применился
+
+Убедитесь, что корневая синхронизация подтянула ревизию с этим файлом:
+
+```bash
+flux get kustomizations -n flux-system flux-system
+```
+
+Должны существовать объекты `Provider` и `Alert`:
+
+```bash
+kubectl get providers.notification.toolkit.fluxcd.io -n flux-system
+kubectl get alerts.notification.toolkit.fluxcd.io -n flux-system
+```
+
+Ожидаемые имена: `alertmanager` и `flux-to-alertmanager`. Детали и статус:
+
+```bash
+kubectl -n flux-system get provider alertmanager -o yaml
+kubectl -n flux-system get alert flux-to-alertmanager -o yaml
+```
+
+При необходимости проверьте, что объект попадает в сборку kustomize (локально из корня репозитория):
+
+```bash
+kubectl kustomize base/flux-system | grep -E 'kind: (Provider|Alert)|name: (alertmanager|flux-to-alertmanager)'
+```
+
+#### Проверка, что CRD notification API установлены
+
+CRD ставит дистрибутив Flux (оператор / `FluxInstance`), а не сам файл `flux-notifications.yaml`. Убедитесь, что в кластере есть группа `notification.toolkit.fluxcd.io`:
+
+```bash
+kubectl api-resources --api-group=notification.toolkit.fluxcd.io
+```
+
+Должны быть как минимум ресурсы вроде `providers`, `alerts`, `receivers` (точный набор зависит от версии Flux).
+
+Явная проверка CRD для `Provider` и `Alert`:
+
+```bash
+kubectl get crd providers.notification.toolkit.fluxcd.io
+kubectl get crd alerts.notification.toolkit.fluxcd.io
+```
+
+Если команды возвращают `NotFound`, контроллер уведомлений или установка Flux не завершена — смотрите `FluxInstance` и поды `notification-controller` в `flux-system`.
 
 ### Метрики
 
