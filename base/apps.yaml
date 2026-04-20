@@ -34,10 +34,28 @@ spec:
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
+  name: prometheus-crds
+  namespace: flux-system
+spec:
+  interval: 10m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  serviceAccountName: kustomize-controller
+  path: ./apps/prometheus-crds
+  prune: true
+  wait: true
+  timeout: 10m
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
   name: flux-operator
   namespace: flux-system
 spec:
   interval: 10m
+  dependsOn:
+    - name: prometheus-crds
   sourceRef:
     kind: GitRepository
     name: flux-system

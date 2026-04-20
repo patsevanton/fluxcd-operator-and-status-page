@@ -17,7 +17,7 @@
 | Путь | Роль |
 |------|------|
 | [base/kustomization.yaml](base/kustomization.yaml) | Корневой kustomize: `flux-system` + [apps.yaml](base/apps.yaml) |
-| [base/apps.yaml](base/apps.yaml) | Flux `Kustomization`: **victoria-metrics** и др.; **Flux Operator** не подключается здесь — ставится вручную по [части 2](#часть-2-переход-на-flux-operator) |
+| [base/apps.yaml](base/apps.yaml) | Flux `Kustomization`: **victoria-metrics**, **prometheus-crds**, **flux-operator** |
 | [base/flux-system/](base/flux-system/) | Классический bootstrap: `gotk-components.yaml`, [gotk-sync.yaml](base/flux-system/gotk-sync.yaml). После перехода на оператор — [flux-instance.yaml](base/flux-system/flux-instance.yaml) |
 | [apps/](apps/) | [apps/kustomization.yaml](apps/kustomization.yaml) — локальный `kustomize build apps/` |
 
@@ -117,80 +117,16 @@ flux-system	victoria-metrics	main@sha1:acfeb109	False    	True 	Applied revision
 
 ### Установка Flux Operator
 
-Развёртывание оператора **не** входит в автоматическую синхронизацию `base/apps.yaml`: выполните шаги ниже вручную из корня репозитория (они добавят `Kustomization` `flux-operator` и каталог `apps/flux-operator/`).
+Развёртывание оператора входит в автоматическую синхронизацию через `base/apps.yaml`.
 
-Создайте файлы из корня репозитория:
+Важно: для `FluxCD Operator` нужен `Prometheus CRD`. Поэтому в `base/apps.yaml` сначала применяется `Kustomization` `prometheus-crds` (каталог `apps/prometheus-crds`), и только потом `flux-operator` через `dependsOn`.
 
-```bash
-mkdir -p apps/flux-operator
+Файлы для этого уже лежат в репозитории:
 
-cat <<'EOF' >> base/apps.yaml
----
-apiVersion: kustomize.toolkit.fluxcd.io/v1
-kind: Kustomization
-metadata:
-  name: flux-operator
-  namespace: flux-system
-spec:
-  interval: 10m
-  sourceRef:
-    kind: GitRepository
-    name: flux-system
-  serviceAccountName: kustomize-controller
-  path: ./apps/flux-operator
-  prune: true
-  wait: true
-  timeout: 10m
-EOF
-
-cat <<'EOF' > apps/flux-operator/sources.yaml
-apiVersion: source.toolkit.fluxcd.io/v1
-kind: HelmRepository
-metadata:
-  name: cp-flux-operator
-  namespace: flux-system
-spec:
-  interval: 24h
-  type: oci
-  url: oci://ghcr.io/controlplaneio-fluxcd/charts
-EOF
-
-cat <<'EOF' > apps/flux-operator/helmrelease.yaml
-apiVersion: helm.toolkit.fluxcd.io/v2
-kind: HelmRelease
-metadata:
-  name: flux-operator
-  namespace: flux-system
-spec:
-  interval: 10m
-  timeout: 10m
-  chart:
-    spec:
-      chart: flux-operator
-      version: "0.47.0"
-      sourceRef:
-        kind: HelmRepository
-        name: cp-flux-operator
-        namespace: flux-system
-      interval: 10m
-  releaseName: flux-operator
-  values:
-    serviceMonitor:
-      create: true
-    web:
-      enabled: true
-      config:
-        baseURL: http://flux.apatsev.org.ru/
-      ingress:
-        enabled: true
-        className: nginx
-        hosts:
-          - host: flux.apatsev.org.ru
-            paths:
-              - path: /
-                pathType: Prefix
-EOF
-```
+- `apps/prometheus-crds/sources.yaml`
+- `apps/prometheus-crds/helmrelease.yaml`
+- `apps/flux-operator/sources.yaml`
+- `apps/flux-operator/helmrelease.yaml`
 
 Закоммитьте изменения и дождитесь синхронизации: `flux get kustomizations -n flux-system`, `flux get helmreleases -n flux-system`.
 
@@ -322,7 +258,7 @@ kubectl -n flux-system events --for fluxinstance/flux
 
 | Компонент | Namespace | Назначение |
 |-----------|------------|------------|
-| Flux Operator | flux-system | Оператор Flux, Mission Control, [Status Page](http://flux.apatsev.org.ru/) — [установка вручную](#часть-2-переход-на-flux-operator), не через закоммиченный `base/apps.yaml` |
+| Flux Operator | flux-system | Оператор Flux, Mission Control, [Status Page](http://flux.apatsev.org.ru/); зависит от `prometheus-crds` для `ServiceMonitor` |
 | VictoriaMetrics K8s Stack | vmks | VMSingle, vmagent, vmalert, Alertmanager, Grafana |
 
 Параметры чарта — `spec.values` в [apps/victoria-metrics/helmrelease.yaml](apps/victoria-metrics/helmrelease.yaml).
