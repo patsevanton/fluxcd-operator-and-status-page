@@ -18,7 +18,7 @@
 |------|------|
 | [base/kustomization.yaml](base/kustomization.yaml) | Корневой kustomize: `flux-system` + [apps.yaml](base/apps.yaml) |
 | [base/apps.yaml](base/apps.yaml) | Flux `Kustomization`: **flux-operator**, **victoria-metrics** |
-| [base/flux-system/](base/flux-system/) | Компоненты Flux (`gotk-components.yaml`), [gotk-sync.yaml](base/flux-system/gotk-sync.yaml) — `GitRepository` + `Kustomization` с `path: ./base` |
+| [base/flux-system/](base/flux-system/) | Классический bootstrap: `gotk-components.yaml`, [gotk-sync.yaml](base/flux-system/gotk-sync.yaml). После перехода на оператор — [flux-instance.yaml](base/flux-system/flux-instance.yaml) |
 | [apps/](apps/) | [apps/kustomization.yaml](apps/kustomization.yaml) — локальный `kustomize build apps/` |
 
 **Нюанс раскладки:** при первом `flux bootstrap` CLI по умолчанию кладёт `flux-system/` в корень репозитория. Содержимое `base/` и `apps/` вы коммитите в Git до или после bootstrap — главное, чтобы путь в bootstrap совпадал с тем, что ожидает кластер.
@@ -147,31 +147,12 @@ spec:
 
 Ресурс `FluxInstance` описывает для Flux Operator, какую версию Flux развернуть, какие контроллеры включить и с какого Git-репозитория синхронизировать манифесты. После установки оператора это шаг, который фактически поднимает Flux в кластере и привязывает его к вашему GitOps.
 
-Укажите тот же репозиторий и ветку, что и при bootstrap. Минимальный пример для публичного Git — создайте `flux-instance.yaml` и примените его (при необходимости отредактируйте `url`, `ref` после создания файла; для приватного репозитория используйте `spec.sync.pullSecret` — [документация](https://fluxoperator.dev/docs/instance/sync/#sync-from-a-git-repository)):
+Укажите тот же репозиторий и ветку, что и при bootstrap. Минимальный пример для публичного Git — [base/flux-system/flux-instance.yaml](base/flux-system/flux-instance.yaml) (при необходимости отредактируйте `url`, `ref`; для приватного репозитория используйте `spec.sync.pullSecret` — [документация](https://fluxoperator.dev/docs/instance/sync/#sync-from-a-git-repository)).
+
+Пока CRD `FluxInstance` есть только после установки оператора, первый раз примените манифест вручную (после миграции его можно включить в [base/flux-system/kustomization.yaml](base/flux-system/kustomization.yaml), см. ниже):
 
 ```bash
-cat > flux-instance.yaml <<'EOF'
-apiVersion: fluxcd.controlplane.io/v1
-kind: FluxInstance
-metadata:
-  name: flux
-  namespace: flux-system
-spec:
-  distribution:
-    version: "2.8.x"
-    registry: "ghcr.io/fluxcd"
-  components:
-    - source-controller
-    - kustomize-controller
-    - helm-controller
-    - notification-controller
-  sync:
-    kind: GitRepository
-    url: "https://github.com/patsevanton/fluxcd-operator-and-status-page.git"
-    ref: "refs/heads/main"
-    path: "."
-EOF
-kubectl apply -f flux-instance.yaml
+kubectl apply -f base/flux-system/flux-instance.yaml
 ```
 
 ### Проверка миграции
@@ -185,17 +166,15 @@ flux get helmreleases -A
 
 ### Очистка репозитория после миграции
 
-Удалите артефакты классического bootstrap, перенесите `flux-instance.yaml` в GitOps (например в `base/flux-system/`), обновите [base/flux-system/kustomization.yaml](base/flux-system/kustomization.yaml) так, чтобы остался только `flux-instance.yaml`.
-
-Если в `flux-instance` был `path: "."`, после переноса в дерево под `base/` задайте **`path: "./base"`**, как в прежнем `gotk-sync.yaml`, чтобы синхронизация шла из `base/`.
+Удалите артефакты классического bootstrap и переключите [base/flux-system/kustomization.yaml](base/flux-system/kustomization.yaml) на один ресурс — `flux-instance.yaml` (он уже лежит рядом и с **`path: "./base"`** в `spec.sync`).
 
 Подробнее: [Flux Bootstrap Migration](https://fluxcd.control-plane.io/operator/flux-bootstrap-migration).
 
 ```bash
 git rm base/flux-system/gotk-components.yaml
 git rm base/flux-system/gotk-sync.yaml
-mv flux-instance.yaml base/flux-system/
-git add base/flux-system/flux-instance.yaml
+# В kustomization.yaml оставьте только flux-instance.yaml (см. пример ниже).
+git add base/flux-system/kustomization.yaml base/flux-system/flux-instance.yaml
 ```
 
 Пример `kustomization.yaml`:

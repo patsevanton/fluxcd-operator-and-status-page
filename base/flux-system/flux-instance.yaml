@@ -16,4 +16,4 @@ spec:
     kind: GitRepository
     url: "https://github.com/patsevanton/fluxcd-operator-and-status-page.git"
     ref: "refs/heads/main"
-    path: "."
+    path: "./base"
