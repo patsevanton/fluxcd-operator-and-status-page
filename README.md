@@ -301,9 +301,21 @@ git add base/flux-system/kustomization.yaml base/flux-system/flux-instance.yaml
 | Главная страница — блок Flux Reconcilers | `screenshots/flux-status-page-main-reconcilers.png` |
 | Resources — failed state | `screenshots/flux-status-page-resources-failed.png` |
 
+#### Главная страница — верхний блок (overview)
+
+Сводка состояния Flux компонентов на главной странице.
+
 ![FluxCD Status Page — главная страница (overview)](screenshots/flux-status-page-main-overview.png)
 
+#### Главная страница — блок Flux Reconcilers
+
+Статусы контроллеров и reconciler-ов Flux.
+
 ![FluxCD Status Page — главная страница (Flux Reconcilers)](screenshots/flux-status-page-main-reconcilers.png)
+
+#### Resources — failed state
+
+Пример экрана с ошибками в ресурсах.
 
 ![FluxCD Status Page — resources (failed)](screenshots/flux-status-page-resources-failed.png)
 
