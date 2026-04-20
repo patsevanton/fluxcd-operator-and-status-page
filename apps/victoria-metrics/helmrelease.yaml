@@ -37,6 +37,8 @@ spec:
           create: false
         kubeScheduler:
           create: false
+        kubernetesSystemScheduler:
+          create: false
     grafana:
       ingress:
         ingressClassName: nginx
