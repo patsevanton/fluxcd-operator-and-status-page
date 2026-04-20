@@ -348,13 +348,6 @@ spec:
     ready: true
 ```
 
-Принудительное обновление:
-
-```bash
-kubectl -n flux-system annotate --overwrite fluxreport/flux \
-  reconcile.fluxcd.io/requestedAt="$(date +%s)"
-```
-
 [Flux Report API](https://fluxoperator.dev/docs/crd/fluxreport).
 
 ### События
