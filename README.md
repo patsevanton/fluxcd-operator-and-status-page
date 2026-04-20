@@ -217,9 +217,9 @@ flux get helmreleases -A
 ```bash
 git rm base/flux-system/gotk-components.yaml
 git rm base/flux-system/gotk-sync.yaml
-# В kustomization.yaml оставьте только flux-instance.yaml (см. пример ниже).
-git add base/flux-system/kustomization.yaml base/flux-system/flux-instance.yaml
 ```
+
+Перед `git add` убедитесь, что в репозитории есть **`base/flux-system/flux-instance.yaml`** (см. блок `kubectl apply` выше) и **`base/flux-system/kustomization.yaml`** перечисляет только его — как в примере ниже.
 
 Пример `kustomization.yaml`:
 
@@ -228,6 +228,10 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
 - flux-instance.yaml
+```
+
+```bash
+git add base/flux-system/kustomization.yaml base/flux-system/flux-instance.yaml
 ```
 
 
