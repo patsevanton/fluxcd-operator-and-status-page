@@ -200,17 +200,11 @@ EOF
 
 ### Создание FluxInstance
 
-Одной установки Flux Operator недостаточно: нужно ещё создать ресурс `FluxInstance`. Он описывает для оператора, какую версию Flux развернуть, какие контроллеры включить и с какого Git-репозитория синхронизировать манифесты. После установки оператора это шаг, который фактически поднимает Flux в кластере и привязывает его к вашему GitOps.
+После установки установки Flux Operator `base/flux-system/kustomization.yaml` продолжает ссылаться на `gotk-components.yaml` и `gotk-sync.yaml`, поэтому Flux всё ещё управляется классическим bootstrap.
 
-Укажите тот же репозиторий и ветку, что и при bootstrap. Минимальный пример для публичного Git — ниже, совпадает с [base/flux-system/flux-instance.yaml](base/flux-system/flux-instance.yaml) (при необходимости отредактируйте `url`, `ref`; для приватного репозитория используйте `spec.sync.pullSecret` — [документация](https://fluxoperator.dev/docs/instance/sync/#sync-from-a-git-repository)).
-
-Пока CRD `FluxInstance` есть только после установки оператора, первый раз создайте манифест и примените его вручную (после миграции его можно включить в [base/flux-system/kustomization.yaml](base/flux-system/kustomization.yaml), см. ниже):
+Лучше всего перейти на `FluxInstance`. FluxInstance описывает для оператора, какую версию Flux развернуть, какие контроллеры включить и с какого Git-репозитория синхронизировать манифесты. После установки оператора это шаг, который фактически поднимает Flux в кластере и привязывает его к вашему GitOps.
 
 Важно про источник управления Flux на этапах миграции:
-
-- До переключения `base/flux-system/kustomization.yaml` продолжает ссылаться на `gotk-components.yaml` и `gotk-sync.yaml`, поэтому Flux всё ещё управляется классическим bootstrap.
-- После создания и применения `base/flux-system/flux-instance.yaml` ресурс `FluxInstance` уже начинает управлять жизненным циклом Flux.
-- Полный переход в Git фиксируется после очистки `gotk-*` и обновления `base/flux-system/kustomization.yaml` на `flux-instance.yaml`.
 
 ```bash
 mkdir -p base/flux-system
@@ -240,6 +234,8 @@ EOF
 kubectl apply -f base/flux-system/flux-instance.yaml
 ```
 
+После создания и применения `base/flux-system/flux-instance.yaml` ресурс `FluxInstance` уже начинает управлять жизненным циклом Flux.
+
 ### Проверка миграции
 
 ```bash
@@ -260,7 +256,9 @@ source-controller-7846484bbc-6rfg5         1/1     Running   0          2m19s
 
 ### Очистка репозитория после миграции
 
-Удалите артефакты классического bootstrap и переключите [base/flux-system/kustomization.yaml](base/flux-system/kustomization.yaml) на один ресурс — `flux-instance.yaml` (он уже лежит рядом и с **`path: "./base"`** в `spec.sync`).
+Полный переход в Git фиксируется после очистки `gotk-*` и обновления `base/flux-system/kustomization.yaml` на `flux-instance.yaml`.
+
+Удалите артефакты классического bootstrap и переключите `base/flux-system/kustomization.yaml` на один ресурс — `flux-instance.yaml`.
 
 Подробнее: [Flux Bootstrap Migration](https://fluxcd.control-plane.io/operator/flux-bootstrap-migration).
 
