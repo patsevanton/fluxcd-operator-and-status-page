@@ -17,6 +17,8 @@ spec:
       interval: 30m
   releaseName: flux-operator
   values:
+    serviceMonitor:
+      create: true
     web:
       enabled: true
       config:

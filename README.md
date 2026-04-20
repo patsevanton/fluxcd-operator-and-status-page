@@ -145,6 +145,8 @@ spec:
 
 ### Создание FluxInstance
 
+Ресурс `FluxInstance` описывает для Flux Operator, какую версию Flux развернуть, какие контроллеры включить и с какого Git-репозитория синхронизировать манифесты. После установки оператора это шаг, который фактически поднимает Flux в кластере и привязывает его к вашему GitOps.
+
 Укажите тот же репозиторий и ветку, что и при bootstrap. Минимальный пример для публичного Git:
 
 ```yaml
@@ -260,7 +262,7 @@ kubectl -n flux-system events --for fluxinstance/flux
 Для Prometheus Operator: `serviceMonitor.create=true` в `values`. Подробнее: [Flux Monitoring and Reporting](https://fluxcd.control-plane.io/operator/monitoring).
 
 
-## Развёрнутый стек
+## Пример установки приложений через FluxCD
 
 Состав задаётся в [base/apps.yaml](base/apps.yaml).
 
@@ -298,14 +300,13 @@ kubectl get pods -n vmks
 
 [VictoriaMetrics K8s Stack](https://github.com/VictoriaMetrics/helm-charts/tree/master/charts/victoria-metrics-k8s-stack) поднимает **Grafana** вместе с vmagent, VMSingle и правилами алертинга.
 
-**Веб-доступ:** в этом репозитории для Grafana включён Ingress — [https://grafana.apatsev.org.ru](https://grafana.apatsev.org.ru) (см. [apps/victoria-metrics/helmrelease.yaml](apps/victoria-metrics/helmrelease.yaml)). Локально без Ingress: `kubectl port-forward -n vmks svc/vmks-grafana 3000:80` и открыть [http://127.0.0.1:3000](http://127.0.0.1:3000); логин по умолчанию — `admin`.
+**Веб-доступ:** в этом репозитории для Grafana включён Ingress — [https://grafana.apatsev.org.ru](https://grafana.apatsev.org.ru) (см. [apps/victoria-metrics/helmrelease.yaml](apps/victoria-metrics/helmrelease.yaml)).
 
 Пароль администратора Grafana:
 
 ```bash
 kubectl get secret vmks-grafana -n vmks -o jsonpath='{.data.admin-password}' | base64 --decode; echo
 ```
-
 
 ## Ссылки
 
