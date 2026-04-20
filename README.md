@@ -82,15 +82,11 @@ flux get kustomizations -A
 
 Имеет смысл делать **после** успешного bootstrap и когда классический Flux уже синхронизирует ваши приложения. Манифесты приложений в Git можно не трогать: меняется способ установки и конфигурации **самих** компонентов Flux.
 
-**О чём эта статья:** здесь рассматривается именно **миграция** — от уже работающего классического Flux к Flux Operator и `FluxInstance`. **Чистую** установку Flux Operator без такого предварительного пути описывает [официальная документация](https://fluxoperator.dev/docs/guides/install/) (Helm, kubectl, Terraform и т.д.).
-
 ### Установка Flux Operator
 
-В репозитории уже есть каталог **[apps/flux-operator-template](apps/flux-operator-template/)** с OCI-источником и `HelmRelease`; [base/apps.yaml](base/apps.yaml) содержит `Kustomization` с `path: ./apps/flux-operator-template`.
+Необходимо создать и запушить в репозиторий
 
-Ниже — те же манифесты для самостоятельной копии (например в `apps/flux-operator`).
-
-**`sources.yaml`**
+**`apps/flux-operator/sources.yaml`**
 
 ```yaml
 # OCI Helm-репозиторий ControlPlane (чарт flux-operator).
@@ -105,7 +101,7 @@ spec:
   url: oci://ghcr.io/controlplaneio-fluxcd/charts
 ```
 
-**`helmrelease.yaml`**
+**`apps/flux-operator/helmrelease.yaml`**
 
 ```yaml
 apiVersion: helm.toolkit.fluxcd.io/v2
