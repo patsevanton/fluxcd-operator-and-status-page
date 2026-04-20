@@ -299,10 +299,13 @@ git add base/flux-system/kustomization.yaml base/flux-system/flux-instance.yaml
 |----------|------|
 | Главная страница — верхний блок (overview) | `screenshots/flux-status-page-main-overview.png` |
 | Главная страница — блок Flux Reconcilers | `screenshots/flux-status-page-main-reconcilers.png` |
+| Resources — failed state | `screenshots/flux-status-page-resources-failed.png` |
 
 ![FluxCD Status Page — главная страница (overview)](screenshots/flux-status-page-main-overview.png)
 
 ![FluxCD Status Page — главная страница (Flux Reconcilers)](screenshots/flux-status-page-main-reconcilers.png)
+
+![FluxCD Status Page — resources (failed)](screenshots/flux-status-page-resources-failed.png)
 
 ### FluxReport
 
