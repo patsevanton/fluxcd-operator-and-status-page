@@ -1,6 +1,11 @@
 {
   "version": 1,
   "skills": {
+    "commit": {
+      "source": "TryGhost/Ghost",
+      "sourceType": "github",
+      "computedHash": "f2f9a52e210a32ad42d4bf5826ce7cec265a2c472de03bee3840a5b295d734d7"
+    },
     "content-writer": {
       "source": "Shubhamsaboo/awesome-llm-apps",
       "sourceType": "github",

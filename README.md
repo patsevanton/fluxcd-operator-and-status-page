@@ -114,7 +114,6 @@ spec:
 EOF
 
 cat <<'EOF' > apps/flux-operator/sources.yaml
-# OCI Helm-репозиторий ControlPlane (чарт flux-operator).
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
@@ -146,6 +145,8 @@ spec:
       interval: 30m
   releaseName: flux-operator
   values:
+    serviceMonitor:
+      create: true
     web:
       enabled: true
       config:
@@ -284,7 +285,6 @@ kubectl -n flux-system events --for fluxinstance/flux
 ### Метрики
 
 Для Prometheus Operator: `serviceMonitor.create=true` в `values`. Подробнее: [Flux Monitoring and Reporting](https://fluxcd.control-plane.io/operator/monitoring).
-
 
 ## Пример установки приложений через FluxCD
 
