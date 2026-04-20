@@ -27,7 +27,7 @@ Use this skill whenever the user asks you to create a git commit for the current
 
 We have a handful of simple standards for commit messages which help us to generate readable changelogs. Please follow this wherever possible and mention the associated issue number.
 
-- **1st line:** Max 80 character summary
+- **1st line:** Max 30 character summary
    - Written in past tense e.g. “Fixed the thing” not “Fixes the thing”
    - Start with one of: Fixed, Changed, Updated, Improved, Added, Removed, Reverted, Moved, Released, Bumped, Cleaned
 - **2nd line:** [Always blank]
