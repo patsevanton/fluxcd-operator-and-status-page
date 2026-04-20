@@ -4,7 +4,7 @@ metadata:
   name: flux-operator
   namespace: flux-system
 spec:
-  interval: 30m
+  interval: 10m
   timeout: 10m
   chart:
     spec:
@@ -14,7 +14,7 @@ spec:
         kind: HelmRepository
         name: cp-flux-operator
         namespace: flux-system
-      interval: 30m
+      interval: 10m
   releaseName: flux-operator
   values:
     serviceMonitor:
