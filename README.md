@@ -487,15 +487,3 @@ kubectl get secret vmks-grafana -n vmks -o jsonpath='{.data.admin-password}' | b
 - Через [Grafana Dashboard ID 16714 (Flux2)](https://grafana.com/grafana/dashboards/16714-flux2/).
 
 Если метрики Flux уже собираются (через `ServiceMonitor`), дашборды начнут показывать данные сразу после импорта.
-
-## Ссылки
-
-- [Installing the Flux CLI](https://fluxcd.io/flux/installation/)
-- [Flux Documentation](https://fluxcd.io/flux/)
-- [Flux Get Started](https://fluxcd.io/flux/get-started/)
-- [Manage Helm Releases](https://fluxcd.io/flux/guides/helmreleases/)
-- [Flux Operator — Installation](https://fluxoperator.dev/docs/guides/install/)
-- [Flux Operator — Cluster sync (GitRepository)](https://fluxoperator.dev/docs/instance/sync/)
-- [Flux Bootstrap Migration](https://fluxcd.control-plane.io/operator/flux-bootstrap-migration)
-- [Flux Monitoring and Reporting](https://fluxcd.control-plane.io/operator/monitoring)
-- [VictoriaMetrics Helm Charts](https://github.com/VictoriaMetrics/helm-charts)
