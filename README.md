@@ -82,17 +82,16 @@ flux get all -A | grep -v "succeeded" | grep -v Applied | grep -v pulled | grep 
 flux get all -A | grep -v "succeeded" | grep -v Applied | grep -v pulled | grep -v "stored artifact" | grep -v Ready
 NAMESPACE  	NAME                     	REVISION          	SUSPENDED	READY	MESSAGE                                           
 
-NAMESPACE  	NAME                  	REVISION       	SUSPENDED	READY	MESSAGE                                                                                                                                                       
-flux-system	helmrepository/bitnami	               	False    	False	failed to fetch Helm repository index: failed to cache index to temporary file: failed to fetch https://charts.bitnami.com/bitnami/index.yaml : 403 Forbidden	
+NAMESPACE  	NAME                               	REVISION       	SUSPENDED	READY	MESSAGE                                                                                                                                                       
+flux-system	helmrepository/bitnami             	               	False    	False	failed to fetch Helm repository index: failed to cache index to temporary file: failed to fetch https://charts.bitnami.com/bitnami/index.yaml : 403 Forbidden	
 
-NAMESPACE  	NAME                             	REVISION	SUSPENDED	READY	MESSAGE                                                         
-flux-system	helmchart/flux-system-broken-demo	        	False    	False	no artifact available for HelmRepository source 'bitnami'      	
+NAMESPACE  	NAME                                          	REVISION	SUSPENDED	READY	MESSAGE                                                         
+flux-system	helmchart/flux-system-broken-demo             	        	False    	False	no artifact available for HelmRepository source 'bitnami'      	
 
-NAMESPACE  	NAME                   	REVISION	SUSPENDED	READY	MESSAGE                                                                                                                 
-flux-system	helmrelease/broken-demo	        	False    	False	HelmChart 'flux-system/flux-system-broken-demo' is not ready: no artifact available for HelmRepository source 'bitnami'	
+NAMESPACE  	NAME                                	REVISION	SUSPENDED	READY	MESSAGE                                                                                                                 
+flux-system	helmrelease/broken-demo             	        	False    	False	HelmChart 'flux-system/flux-system-broken-demo' is not ready: no artifact available for HelmRepository source 'bitnami'	
 
 NAMESPACE  	NAME                          	REVISION          	SUSPENDED	READY	MESSAGE                              
-
 ```
 
 Можно проверить helmreleases kustomizations отдельно.
