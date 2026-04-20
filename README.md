@@ -117,14 +117,7 @@ flux-system	victoria-metrics	main@sha1:6f493bf6	False    	True 	Applied revision
 
 Развёртывание оператора входит в автоматическую синхронизацию через `base/apps.yaml`.
 
-Важно: для `FluxCD Operator` нужен `Prometheus CRD`. Поэтому в `base/apps.yaml` сначала применяется `Kustomization` `prometheus-crds` (каталог `apps/prometheus-crds`), и только потом `flux-operator` через `dependsOn`.
-
-Файлы для этого уже лежат в репозитории:
-
-- `apps/prometheus-crds/sources.yaml`
-- `apps/prometheus-crds/helmrelease.yaml`
-- `apps/flux-operator/sources.yaml`
-- `apps/flux-operator/helmrelease.yaml`
+Важно: для `FluxCD Operator` нужен `Prometheus CRD`. 
 
 Закоммитьте изменения и дождитесь синхронизации: `flux get kustomizations -n flux-system`, `flux get helmreleases -n flux-system`.
 
