@@ -2,7 +2,15 @@
 
 Когда вы впервые поднимаете GitOps в Kubernetes, **Flux CD** кажется достаточным: `flux bootstrap`, манифесты в Git, контроллеры тянут состояние кластера. Со временем появляется желание **централизованно** управлять версиями дистрибутива Flux, упростить миграции и получить **наглядную картину** синхронизации — без ручного запуска `flux get all -A`.
 
-В этом материале зафиксирован путь от классического bootstrap к **[Flux Operator](https://fluxoperator.dev/)** с ресурсом **FluxInstance** и **FluxCD Status Page**. В GitOps-части репозитория разворачиваются **Flux Operator** ([apps/flux-operator-template](apps/flux-operator-template/)) и стек **[VictoriaMetrics K8s Stack](https://github.com/VictoriaMetrics/helm-charts/tree/master/charts/victoria-metrics-k8s-stack)** ([apps/victoria-metrics](apps/victoria-metrics/)).
+В этом материале зафиксирован путь от классического bootstrap к **[Flux Operator](https://fluxoperator.dev/)** с ресурсом **FluxInstance** и **FluxCD Status Page**. В GitOps-части репозитория разворачиваются **Flux Operator** ([apps/flux-operator-template](apps/flux-operator-template/)) и стек **VictoriaMetrics K8s Stack**.
+
+## Преимущества Flux Operator
+
+- **Декларативный дистрибутив Flux** — версия, реестр образов и состав контроллеров задаются в ресурсе **FluxInstance**, без ручного сопровождения отдельных манифестов `gotk-components`.
+- **Одна точка входа для синхронизации с Git** — в `FluxInstance.spec.sync` описывается связка с репозиторием и путём вместо разрозненной ручной сборки нескольких объектов.
+- **Предсказуемые обновления и откат** — смена версии Flux и конфигурации идёт через Git, с тем же аудитом и ревью, что и для приложений.
+- **Наблюдаемость из коробки** — состояние установки и синхронизации удобно снимать для отчётов, метрик и **Status Page**, а не только через `flux get` в CLI.
+- **Та же модель GitOps** — после перехода по-прежнему используются привычные `GitRepository`, `Kustomization`, `HelmRelease`; меняется способ **установки и жизненного цикла** самого Flux.
 
 Ниже — суть подхода, [структура репозитория](#как-устроен-репозиторий) и пошаговые команды. Про **FluxReport**, события и метрики Status Page — [отдельный раздел](#fluxcd-status-page); состав приложений в Git — [в таблице стека](#развёрнутый-стек).
 
