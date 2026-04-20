@@ -35,6 +35,8 @@ spec:
       groups:
         kubeControllerManager:
           create: false
+        kubeScheduler:
+          create: false
     grafana:
       ingress:
         ingressClassName: nginx
