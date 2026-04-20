@@ -293,15 +293,6 @@ git add base/flux-system/kustomization.yaml base/flux-system/flux-instance.yaml
 
 ### Скриншоты
 
-Файлы удобно складывать в [screenshots/](screenshots/).
-
-| Описание | Файл |
-|----------|------|
-| Главная страница — верхний блок (overview) | `screenshots/flux-status-page-main-overview.png` |
-| Главная страница — блок Flux Reconcilers | `screenshots/flux-status-page-main-reconcilers.png` |
-| Resources — failed state | `screenshots/flux-status-page-resources-failed.png` |
-| Events — список событий Flux | `screenshots/flux-status-page-events.png` |
-
 #### Главная страница — верхний блок (overview)
 
 Сводка состояния Flux компонентов на главной странице.
