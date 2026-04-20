@@ -2,9 +2,7 @@
 
 Когда вы впервые поднимаете GitOps в Kubernetes, **Flux CD** кажется достаточным: `flux bootstrap`, манифесты в Git, контроллеры тянут состояние кластера. 
 
-Здесь зафиксирован путь от классического bootstrap к **[Flux Operator](https://fluxoperator.dev/)** (**FluxInstance**) и **FluxCD Status Page**.
-
-Классический bootstrap хорошо **заводит** кластер; поверх него оператор даёт:
+Но лучше перейти на Flux Operator:
 
 - **Декларативный дистрибутив** — версия, реестр образов и состав контроллеров в **FluxInstance** вместо ручного сопровождения манифестов `gotk-components`.
 - **Единая синхронизация с Git** — `FluxInstance.spec.sync` вместо разрозненной ручной сборки нескольких объектов.
@@ -12,7 +10,9 @@
 - **Наблюдаемость** — отчёты, метрики и **Status Page**, не только `flux get` в CLI.
 - **Привычный GitOps** — `GitRepository`, `Kustomization`, `HelmRelease` остаются; меняется способ **установки и жизненного цикла** самого Flux.
 
-## Как устроен репозиторий
+Здесь зафиксирован путь от классического bootstrap к **[Flux Operator](https://fluxoperator.dev/)** (**FluxInstance**) и **FluxCD Status Page**.
+
+## Как устроен классический репозиторий FluxCD
 
 | Путь | Роль |
 |------|------|
