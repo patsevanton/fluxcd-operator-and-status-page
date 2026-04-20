@@ -263,20 +263,22 @@ git rm base/flux-system/gotk-components.yaml
 git rm base/flux-system/gotk-sync.yaml
 ```
 
-Перед `git add` убедитесь, что в репозитории есть **`base/flux-system/flux-instance.yaml`** (см. блок `kubectl apply` выше) и **`base/flux-system/kustomization.yaml`** перечисляет только его — как в примере ниже.
+Пересоздайте base/flux-system/kustomization.yaml:
 
-Пример `kustomization.yaml`:
-
-```yaml
+```bash
+cat <<'EOF' > base/flux-system/kustomization.yaml
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
 - flux-instance.yaml
+EOF
 ```
 
 ```bash
 git add base/flux-system/kustomization.yaml base/flux-system/flux-instance.yaml
 ```
+
+Закоммитьте изменения.
 
 
 ## FluxCD Status Page
