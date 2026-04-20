@@ -111,7 +111,6 @@ NAMESPACE  	NAME            	REVISION          	SUSPENDED	READY	MESSAGE
 flux-system	broken-demo     	main@sha1:acfeb109	False    	True 	Applied revision: main@sha1:acfeb109	
 flux-system	flux-system     	main@sha1:acfeb109	False    	True 	Applied revision: main@sha1:acfeb109	
 flux-system	victoria-metrics	main@sha1:acfeb109	False    	True 	Applied revision: main@sha1:acfeb109	
-user@redmibook:~/github/patsevanton/fluxcd-operator-and-status-page$ 
 ```
 
 ## Часть 2. Переход на Flux Operator
