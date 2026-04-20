@@ -27,14 +27,6 @@ resource "yandex_dns_recordset" "grafana" {
   data    = [yandex_vpc_address.addr.external_ipv4_address[0].address]
 }
 
-resource "yandex_dns_recordset" "victorialogs" {
-  zone_id = yandex_dns_zone.apatsev-org-ru.id
-  name    = "victorialogs.apatsev.org.ru."
-  type    = "A"
-  ttl     = 200
-  data    = [yandex_vpc_address.addr.external_ipv4_address[0].address]
-}
-
 resource "yandex_dns_recordset" "victoriametrics" {
   zone_id = yandex_dns_zone.apatsev-org-ru.id
   name    = "vmselect.apatsev.org.ru."
@@ -47,30 +39,6 @@ resource "yandex_dns_recordset" "victoriametrics" {
 resource "yandex_dns_recordset" "flux_web" {
   zone_id = yandex_dns_zone.apatsev-org-ru.id
   name    = "flux.apatsev.org.ru."
-  type    = "A"
-  ttl     = 200
-  data    = [yandex_vpc_address.addr.external_ipv4_address[0].address]
-}
-
-resource "yandex_dns_recordset" "goldpinger" {
-  zone_id = yandex_dns_zone.apatsev-org-ru.id
-  name    = "goldpinger.apatsev.org.ru."
-  type    = "A"
-  ttl     = 200
-  data    = [yandex_vpc_address.addr.external_ipv4_address[0].address]
-}
-
-resource "yandex_dns_recordset" "argo_rollouts" {
-  zone_id = yandex_dns_zone.apatsev-org-ru.id
-  name    = "argo-rollouts.apatsev.org.ru."
-  type    = "A"
-  ttl     = 200
-  data    = [yandex_vpc_address.addr.external_ipv4_address[0].address]
-}
-
-resource "yandex_dns_recordset" "chaos_mesh" {
-  zone_id = yandex_dns_zone.apatsev-org-ru.id
-  name    = "chaos-mesh.apatsev.org.ru."
   type    = "A"
   ttl     = 200
   data    = [yandex_vpc_address.addr.external_ipv4_address[0].address]
