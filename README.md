@@ -147,9 +147,10 @@ spec:
 
 Ресурс `FluxInstance` описывает для Flux Operator, какую версию Flux развернуть, какие контроллеры включить и с какого Git-репозитория синхронизировать манифесты. После установки оператора это шаг, который фактически поднимает Flux в кластере и привязывает его к вашему GitOps.
 
-Укажите тот же репозиторий и ветку, что и при bootstrap. Минимальный пример для публичного Git:
+Укажите тот же репозиторий и ветку, что и при bootstrap. Минимальный пример для публичного Git — создайте `flux-instance.yaml` и примените его (при необходимости отредактируйте `url`, `ref` после создания файла; для приватного репозитория используйте `spec.sync.pullSecret` — [документация](https://fluxoperator.dev/docs/instance/sync/#sync-from-a-git-repository)):
 
-```yaml
+```bash
+cat > flux-instance.yaml <<'EOF'
 apiVersion: fluxcd.controlplane.io/v1
 kind: FluxInstance
 metadata:
@@ -169,11 +170,7 @@ spec:
     url: "https://github.com/patsevanton/fluxcd-operator-and-status-page.git"
     ref: "refs/heads/main"
     path: "."
-```
-
-Сохраните в `flux-instance.yaml`, при необходимости отредактируйте `url`, `ref`; для приватного репозитория используйте `spec.sync.pullSecret` — [документация](https://fluxoperator.dev/docs/instance/sync/#sync-from-a-git-repository).
-
-```bash
+EOF
 kubectl apply -f flux-instance.yaml
 ```
 
