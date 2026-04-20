@@ -194,9 +194,12 @@ spec:
 EOF
 ```
 
-Закоммитьте изменения и дождитесь синхронизации: `flux get kustomizations -n flux-system`, `flux get helmreleases -n flux-system`.
+Закоммитьте изменения и дождитесь синхронизации:
 
-Проверка: `flux get helmreleases -n flux-system` (релиз `flux-operator`).
+```bash
+flux get kustomizations -n flux-system
+flux get helmreleases -n flux-system
+```
 
 ### Создание FluxInstance
 
