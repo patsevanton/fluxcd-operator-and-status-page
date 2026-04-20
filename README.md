@@ -115,9 +115,79 @@ flux-system	victoria-metrics	main@sha1:6f493bf6	False    	True 	Applied revision
 
 ### Установка Flux Operator
 
-Развёртывание оператора входит в автоматическую синхронизацию через `base/apps.yaml`.
+Для установке Flux Operator выполните шаги ниже вручную из корня репозитория.
 
-Важно: для `FluxCD Operator` нужен `Prometheus CRD`. 
+Создайте файлы из корня репозитория:
+
+```bash
+mkdir -p apps/flux-operator
+
+cat <<'EOF' >> base/apps.yaml
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: flux-operator
+  namespace: flux-system
+spec:
+  interval: 10m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  serviceAccountName: kustomize-controller
+  path: ./apps/flux-operator
+  prune: true
+  wait: true
+  timeout: 10m
+EOF
+
+cat <<'EOF' > apps/flux-operator/sources.yaml
+# OCI Helm-репозиторий ControlPlane (чарт flux-operator).
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: cp-flux-operator
+  namespace: flux-system
+spec:
+  interval: 24h
+  type: oci
+  url: oci://ghcr.io/controlplaneio-fluxcd/charts
+EOF
+
+cat <<'EOF' > apps/flux-operator/helmrelease.yaml
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: flux-operator
+  namespace: flux-system
+spec:
+  interval: 30m
+  timeout: 10m
+  chart:
+    spec:
+      chart: flux-operator
+      version: "0.47.0"
+      sourceRef:
+        kind: HelmRepository
+        name: cp-flux-operator
+        namespace: flux-system
+      interval: 30m
+  releaseName: flux-operator
+  values:
+    web:
+      enabled: true
+      config:
+        baseURL: http://flux.apatsev.org.ru/
+      ingress:
+        enabled: true
+        className: nginx
+        hosts:
+          - host: flux.apatsev.org.ru
+            paths:
+              - path: /
+                pathType: Prefix
+EOF
+```
 
 Закоммитьте изменения и дождитесь синхронизации: `flux get kustomizations -n flux-system`, `flux get helmreleases -n flux-system`.
 
