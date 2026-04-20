@@ -142,7 +142,6 @@ spec:
 EOF
 
 cat <<'EOF' > apps/flux-operator/sources.yaml
-# OCI Helm-репозиторий ControlPlane (чарт flux-operator).
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
