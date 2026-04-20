@@ -55,8 +55,6 @@ flux bootstrap github \
   --path=base
 ```
 
-Ожидаемый результат: контроллеры Flux в `flux-system`, коммиты sync-манифестов, **GitRepository** + **Kustomization** на каталог **`base/`**.
-
 Фрагмент типичного вывода:
 
 ```
@@ -98,18 +96,19 @@ NAMESPACE  	NAME                          	REVISION          	SUSPENDED	READY	ME
 
 ```
 flux get helmreleases -n flux-system
-NAME       	REVISION	SUSPENDED	READY	MESSAGE                                                                                                                 
-broken-demo	        	False    	False	HelmChart 'flux-system/flux-system-broken-demo' is not ready: no artifact available for HelmRepository source 'bitnami'	
-vmks       	0.74.1  	False    	True 	Helm upgrade succeeded for release vmks/vmks.v2 with chart victoria-metrics-k8s-stack@0.74.1
+NAME                    	REVISION	SUSPENDED	READY	MESSAGE                                                                                                                 
+broken-demo             	        	False    	False	HelmChart 'flux-system/flux-system-broken-demo' is not ready: no artifact available for HelmRepository source 'bitnami'	
+prometheus-operator-crds	28.0.1  	False    	True 	Helm install succeeded for release flux-system/prometheus-operator-crds.v1 with chart prometheus-operator-crds@28.0.1  	
+vmks                    	0.74.1  	False    	True 	Helm upgrade succeeded for release vmks/vmks.v2 with chart victoria-metrics-k8s-stack@0.74.1 
 ```
-
 
 ```bash
 flux get kustomizations -A
 NAMESPACE  	NAME            	REVISION          	SUSPENDED	READY	MESSAGE                              
-flux-system	broken-demo     	main@sha1:acfeb109	False    	True 	Applied revision: main@sha1:acfeb109	
-flux-system	flux-system     	main@sha1:acfeb109	False    	True 	Applied revision: main@sha1:acfeb109	
-flux-system	victoria-metrics	main@sha1:acfeb109	False    	True 	Applied revision: main@sha1:acfeb109	
+flux-system	broken-demo     	main@sha1:6f493bf6	False    	True 	Applied revision: main@sha1:6f493bf6	
+flux-system	flux-system     	main@sha1:6f493bf6	False    	True 	Applied revision: main@sha1:6f493bf6	
+flux-system	prometheus-crds 	main@sha1:6f493bf6	False    	True 	Applied revision: main@sha1:6f493bf6	
+flux-system	victoria-metrics	main@sha1:6f493bf6	False    	True 	Applied revision: main@sha1:6f493bf6
 ```
 
 ## Часть 2. Переход на Flux Operator
