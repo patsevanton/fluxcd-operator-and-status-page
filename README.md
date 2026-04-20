@@ -297,12 +297,12 @@ git add base/flux-system/kustomization.yaml base/flux-system/flux-instance.yaml
 
 | Описание | Файл |
 |----------|------|
-| Status Page — обзор | `screenshots/flux-status-page-overview.png` |
-| Dashboard / Mission Control (если включён) | `screenshots/flux-dashboard.png` |
+| Главная страница — верхний блок (overview) | `screenshots/flux-status-page-main-overview.png` |
+| Главная страница — блок Flux Reconcilers | `screenshots/flux-status-page-main-reconcilers.png` |
 
-![FluxCD Status Page — обзор](screenshots/flux-status-page-overview.png)
+![FluxCD Status Page — главная страница (overview)](screenshots/flux-status-page-main-overview.png)
 
-![Flux CD dashboard / Mission Control](screenshots/flux-dashboard.png)
+![FluxCD Status Page — главная страница (Flux Reconcilers)](screenshots/flux-status-page-main-reconcilers.png)
 
 ### FluxReport
 
