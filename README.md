@@ -238,9 +238,18 @@ kubectl apply -f base/flux-system/flux-instance.yaml
 
 ```bash
 kubectl -n flux-system get fluxinstance flux
+NAME   AGE     READY   STATUS                           REVISION
+flux   2m21s   True    Reconciliation finished in 19s   v2.8.5@sha256:df269637e1cbd79f25263d77f754ec782afb780ad197f4732771f661ceb73f3f
+```
+
+```bash
 kubectl -n flux-system get pods
-flux get kustomizations -A
-flux get helmreleases -A
+NAME                                       READY   STATUS    RESTARTS   AGE
+flux-operator-64bbc44d7c-v87fj             1/1     Running   0          40m
+helm-controller-65ff4c7c98-fvjg9           1/1     Running   0          2m20s
+kustomize-controller-59fc467858-mhsbz      1/1     Running   0          2m20s
+notification-controller-6d66bb7797-7wp5r   1/1     Running   0          2m20s
+source-controller-7846484bbc-6rfg5         1/1     Running   0          2m19s
 ```
 
 ### Очистка репозитория после миграции
