@@ -70,21 +70,24 @@ Please enter your GitHub personal access token (PAT):
 
 ### Проверка после bootstrap
 
+Flux уже синхронизирует ваши приложения. `flux get all -A` показывает состояние всех ресурсов FluxCD.
+
 ```bash
-kubectl get pods -n flux-system
-kubectl get pods -n vmks
+flux get all -A
+```
+
+Можно проверить helmreleases kustomizations отдельно.
+
+```bash
 flux get helmreleases -n flux-system
 flux get kustomizations -A
 ```
 
-
 ## Часть 2. Переход на Flux Operator
-
-Имеет смысл делать **после** успешного bootstrap и когда классический Flux уже синхронизирует ваши приложения. Манифесты приложений в Git можно не трогать: меняется способ установки и конфигурации **самих** компонентов Flux.
 
 ### Установка Flux Operator
 
-Создайте файлы и запушьте в репозиторий (из корня репозитория):
+Создайте файлы из корня репозитория:
 
 ```bash
 mkdir -p apps/flux-operator
@@ -159,8 +162,6 @@ EOF
 Закоммитьте изменения и дождитесь синхронизации: `flux get kustomizations -n flux-system`, `flux get helmreleases -n flux-system`.
 
 Проверка: `flux get helmreleases -n flux-system` (релиз `flux-operator`).
-
-Установка оператора не через этот репозиторий — в [документации Flux Operator](https://fluxoperator.dev/docs/guides/install/) (Helm, kubectl, Terraform и др.).
 
 ### Создание FluxInstance
 
