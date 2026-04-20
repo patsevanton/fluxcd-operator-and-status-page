@@ -1,0 +1,35 @@
+# Flux notification-controller → Prometheus Alertmanager (VMAlertmanager из victoria-metrics-k8s-stack).
+# События с severity error попадают в Alertmanager; Grafana их видит через datasource Alertmanager.
+---
+apiVersion: notification.toolkit.fluxcd.io/v1beta3
+kind: Provider
+metadata:
+  name: alertmanager
+  namespace: flux-system
+spec:
+  type: alertmanager
+  # VMAlertmanager CR: vmks-victoria-metrics-k8s-stack (release vmks, chart victoria-metrics-k8s-stack), ns vmks
+  address: http://vmks-victoria-metrics-k8s-stack.vmks.svc.cluster.local:9093/api/v2/alerts/
+---
+apiVersion: notification.toolkit.fluxcd.io/v1beta3
+kind: Alert
+metadata:
+  name: flux-to-alertmanager
+  namespace: flux-system
+spec:
+  providerRef:
+    name: alertmanager
+  eventSeverity: error
+  eventSources:
+    - kind: GitRepository
+      name: "*"
+    - kind: OCIRepository
+      name: "*"
+    - kind: HelmRepository
+      name: "*"
+    - kind: HelmChart
+      name: "*"
+    - kind: HelmRelease
+      name: "*"
+    - kind: Kustomization
+      name: "*"
