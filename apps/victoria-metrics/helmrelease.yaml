@@ -31,6 +31,10 @@ spec:
       interval: 15m
   releaseName: vmks
   values:
+    defaultRules:
+      groups:
+        kubeControllerManager:
+          create: false
     grafana:
       ingress:
         ingressClassName: nginx
