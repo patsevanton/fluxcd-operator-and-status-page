@@ -7,6 +7,11 @@ spec:
   interval: 15m
   timeout: 15m
   targetNamespace: vmks
+  # RetryOnFailure: при установке/апгрейде victoria-metrics-k8s-stack возможна гонка —
+  # часть ресурсов создаётся до того, как оператор и webhook готовы принимать запросы
+  # (например: failed to call webhook "vmagents.operator.victoriametrics.com" —
+  # no endpoints available for service "vmks-victoria-metrics-operator"). Flux
+  # повторяет helm install/upgrade с интервалом, пока ошибки не исчезнут.
   install:
     strategy:
       name: RetryOnFailure
