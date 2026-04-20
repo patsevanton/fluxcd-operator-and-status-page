@@ -167,11 +167,35 @@ EOF
 
 Одной установки Flux Operator недостаточно: нужно ещё создать ресурс `FluxInstance`. Он описывает для оператора, какую версию Flux развернуть, какие контроллеры включить и с какого Git-репозитория синхронизировать манифесты. После установки оператора это шаг, который фактически поднимает Flux в кластере и привязывает его к вашему GitOps.
 
-Укажите тот же репозиторий и ветку, что и при bootstrap. Минимальный пример для публичного Git — [base/flux-system/flux-instance.yaml](base/flux-system/flux-instance.yaml) (при необходимости отредактируйте `url`, `ref`; для приватного репозитория используйте `spec.sync.pullSecret` — [документация](https://fluxoperator.dev/docs/instance/sync/#sync-from-a-git-repository)).
+Укажите тот же репозиторий и ветку, что и при bootstrap. Минимальный пример для публичного Git — ниже, совпадает с [base/flux-system/flux-instance.yaml](base/flux-system/flux-instance.yaml) (при необходимости отредактируйте `url`, `ref`; для приватного репозитория используйте `spec.sync.pullSecret` — [документация](https://fluxoperator.dev/docs/instance/sync/#sync-from-a-git-repository)).
 
-Пока CRD `FluxInstance` есть только после установки оператора, первый раз примените манифест вручную (после миграции его можно включить в [base/flux-system/kustomization.yaml](base/flux-system/kustomization.yaml), см. ниже):
+Пока CRD `FluxInstance` есть только после установки оператора, первый раз создайте манифест и примените его вручную (после миграции его можно включить в [base/flux-system/kustomization.yaml](base/flux-system/kustomization.yaml), см. ниже):
 
 ```bash
+mkdir -p base/flux-system
+
+cat <<'EOF' > base/flux-system/flux-instance.yaml
+apiVersion: fluxcd.controlplane.io/v1
+kind: FluxInstance
+metadata:
+  name: flux
+  namespace: flux-system
+spec:
+  distribution:
+    version: "2.8.x"
+    registry: "ghcr.io/fluxcd"
+  components:
+    - source-controller
+    - kustomize-controller
+    - helm-controller
+    - notification-controller
+  sync:
+    kind: GitRepository
+    url: "https://github.com/patsevanton/fluxcd-operator-and-status-page.git"
+    ref: "refs/heads/main"
+    path: "./base"
+EOF
+
 kubectl apply -f base/flux-system/flux-instance.yaml
 ```
 
