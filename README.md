@@ -84,11 +84,31 @@ flux get kustomizations -A
 
 ### Установка Flux Operator
 
-Необходимо создать и запушить в репозиторий
+Создайте файлы и запушьте в репозиторий (из корня репозитория):
 
-**`apps/flux-operator/sources.yaml`**
+```bash
+mkdir -p apps/flux-operator
 
-```yaml
+cat <<'EOF' >> base/apps.yaml
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: flux-operator
+  namespace: flux-system
+spec:
+  interval: 10m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  serviceAccountName: kustomize-controller
+  path: ./apps/flux-operator
+  prune: true
+  wait: true
+  timeout: 10m
+EOF
+
+cat <<'EOF' > apps/flux-operator/sources.yaml
 # OCI Helm-репозиторий ControlPlane (чарт flux-operator).
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
@@ -99,11 +119,9 @@ spec:
   interval: 24h
   type: oci
   url: oci://ghcr.io/controlplaneio-fluxcd/charts
-```
+EOF
 
-**`apps/flux-operator/helmrelease.yaml`**
-
-```yaml
+cat <<'EOF' > apps/flux-operator/helmrelease.yaml
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
@@ -135,6 +153,7 @@ spec:
             paths:
               - path: /
                 pathType: Prefix
+EOF
 ```
 
 Закоммитьте изменения и дождитесь синхронизации: `flux get kustomizations -n flux-system`, `flux get helmreleases -n flux-system`.
@@ -191,7 +210,7 @@ resources:
 
 После установки Flux Operator в игру входят **FluxReport**, события по `FluxInstance` и метрики Prometheus.
 
-**Демо-интерфейс:** [http://flux.apatsev.org.ru/](http://flux.apatsev.org.ru/) — host и `baseURL` задаются в [apps/flux-operator-template/helmrelease.yaml](apps/flux-operator-template/helmrelease.yaml).
+**Демо-интерфейс:** [http://flux.apatsev.org.ru/](http://flux.apatsev.org.ru/).
 
 ### Скриншоты
 
@@ -232,8 +251,6 @@ kubectl -n flux-system events --for fluxinstance/flux
 Уведомления (Slack, Teams и др.) — через notification-controller, [Provider/Alert](https://fluxoperator.dev/docs/crd/provider).
 
 ### Метрики
-
-Сервис `flux-operator`, порт **8080**. Чтобы изменить параметры чарта (например интервал отчёта `reporting.interval`), отредактируйте `spec.values` в [apps/flux-operator-template/helmrelease.yaml](apps/flux-operator-template/helmrelease.yaml) и закоммитьте.
 
 Для Prometheus Operator: `serviceMonitor.create=true` в `values`. Подробнее: [Flux Monitoring and Reporting](https://fluxcd.control-plane.io/operator/monitoring).
 
