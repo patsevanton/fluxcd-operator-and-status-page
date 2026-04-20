@@ -1,0 +1,45 @@
+---
+description: Git commit workflow and commit message format (short subject, past tense, optional body)
+alwaysApply: true
+---
+
+# Commits
+
+When the user asks for a git commit or when generating a **commit message**, follow this.
+
+**No emojis** in commit messages (subject or body) or in text you write about the change (explanations, PR descriptions, changelog-style notes tied to the commit).
+
+## Before committing
+
+1. Review `git status`, `git diff`, and `git log -5 --oneline`.
+2. Stage only files that belong to the change; no unrelated or generated artifacts.
+3. Do not push unless the user explicitly asks.
+4. Keep the commit focused; do not bundle unrelated changes.
+5. If there are no relevant changes, do not create an empty commit.
+6. If hooks fail, fix the issue and recommit. Never bypass hooks.
+7. After committing, confirm with `git status --short`.
+
+## Commit message format
+
+Keep messages suitable for changelogs.
+
+- **Line 1:** At most **30 characters** (subject / summary).
+  - **Past tense** (e.g. “Fixed the thing”, not “Fixes the thing”).
+  - Start with one of: Fixed, Changed, Updated, Improved, Added, Removed, Reverted, Moved, Released, Bumped, Cleaned.
+- **Line 2:** Blank.
+- **Line 3:** `ref <url>`, `fixes <url>`, `closes <url>`, or omit.
+- **From line 4:** Short **why** (context: why this, why now). The diff is the *what*.
+- For **user-facing** changes, write line 1 from the **user’s** perspective (what they gain or what was fixed for them), still without emojis.
+
+## Example
+
+```
+Added page analytics config
+
+ref https://example.com/issue/123
+
+- behind a flag while analytics are still in development
+- name `pageAnalytics` matches agreed terminology
+```
+
+When suggesting or generating a commit message in the SCM/commit UI, **default to a short first line (≤30 chars)** and avoid long paragraphs unless the user asks for detail.

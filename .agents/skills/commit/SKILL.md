@@ -34,24 +34,14 @@ We have a handful of simple standards for commit messages which help us to gener
 - **3rd line:** `ref <issue link>`, `fixes <issue link>`, `closes <issue link>` or blank
 - **4th line:** Why this change was made - the code includes the what, the commit message should describe the context of why - why this, why now, why not something else?
 
-If your change is **user-facing** please prepend the first line of your commit with **an emoji**.
+**Do not use emojis** in commit messages or in text you write about the change (explanations, PR notes).
 
-Because emoji commits are the release notes, it's important that anything that gets an emoji is a user-facing change that's significant and relevant for end-users to see.
-
-The first line of an emoji commit message should be from the perspective of the user. For example, 🐛 Fixed a race condition in the members service is technical and tells the user nothing, but 🐛 Fixed a bug causing active members to lose access to paid content tells the user reading the release notes “oh yeah, they fixed that bug I kept hitting.”
-
-###  Main emojis we are using:
-
-- ✨ Feature
-- 🎨 Improvement / change
-- 🐛 Bug Fix
-- 🌐 i18n (translation) submissions
-- 💡 Anything else flagged to users or whoever is writing release notes
+If the change is **user-facing**, the first line should still be from the **user’s** perspective (what they see or gain). For example, “Fixed a race condition in the members service” is opaque to users; “Fixed a bug causing active members to lose access to paid content” is clearer for release notes—without any emoji prefix.
 
 ### Example
 
 ```
-✨ Added config flag for disabling page analytics
+Added page analytics config
 
 ref https://linear.app/tryghost/issue/ENG-1234/
 
