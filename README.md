@@ -97,18 +97,15 @@ NAMESPACE  	NAME                          	REVISION          	SUSPENDED	READY	ME
 
 Можно проверить helmreleases kustomizations отдельно.
 
-```bash
-flux get helmreleases -n flux-system
-flux get kustomizations -A
-```
-
-Пример вывода:
-
 ```
 flux get helmreleases -n flux-system
 NAME       	REVISION	SUSPENDED	READY	MESSAGE                                                                                                                 
 broken-demo	        	False    	False	HelmChart 'flux-system/flux-system-broken-demo' is not ready: no artifact available for HelmRepository source 'bitnami'	
-vmks       	0.74.1  	False    	True 	Helm upgrade succeeded for release vmks/vmks.v2 with chart victoria-metrics-k8s-stack@0.74.1                           	
+vmks       	0.74.1  	False    	True 	Helm upgrade succeeded for release vmks/vmks.v2 with chart victoria-metrics-k8s-stack@0.74.1
+```
+
+
+```bash
 flux get kustomizations -A
 NAMESPACE  	NAME            	REVISION          	SUSPENDED	READY	MESSAGE                              
 flux-system	broken-demo     	main@sha1:acfeb109	False    	True 	Applied revision: main@sha1:acfeb109	
