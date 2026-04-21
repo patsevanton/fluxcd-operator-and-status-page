@@ -1,5 +1,3 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-resources:
-- flux-notifications.yaml
-- podmonitor.yaml
+# Добавьте пользовательские ресурсы позже, когда создадите их файлы.

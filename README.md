@@ -67,7 +67,7 @@ Please enter your GitHub personal access token (PAT):
 ✔ all components are healthy
 ```
 
-flux bootstrap создаст директорию base/flux-system с base/flux-system/gotk-components.yaml и base/flux-system/gotk-components.yaml. Скачайте изменения из Git-репозитория:
+flux bootstrap создаст директорию base/flux-system с base/flux-system/gotk-components.yaml и base/flux-system/gotk-sync.yaml. Скачайте изменения из Git-репозитория:
 
 ```bash
 git pull
