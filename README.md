@@ -602,6 +602,14 @@ resources:
 EOF
 ```
 
+Зафиксируйте изменения и отправьте их в удалённый репозиторий:
+
+```bash
+git add apps/flux-resources/
+git commit -m "Added PodMonitor for Flux"
+git push
+```
+
 Для Prometheus Operator: `serviceMonitor.create=true` в `values`. Подробнее: [Flux Monitoring and Reporting](https://fluxcd.control-plane.io/operator/monitoring).
 
 ## Устранение неполадок
