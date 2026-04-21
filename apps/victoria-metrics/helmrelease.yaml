@@ -47,6 +47,11 @@ spec:
           create: false
         kubernetesSystemScheduler:
           create: false
+    # Дольше держать в UI алерты, пришедшие через Flux → Alertmanager (EndsAt vs resolve_timeout).
+    alertmanager:
+      config:
+        global:
+          resolve_timeout: 1h
     grafana:
       ingress:
         ingressClassName: nginx

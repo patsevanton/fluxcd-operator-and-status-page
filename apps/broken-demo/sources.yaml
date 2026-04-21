@@ -1,8 +1,10 @@
+# Bitnami отключил классический Helm index (403 на charts.bitnami.com).
+# Официальная поставка чартов — OCI: registry-1.docker.io/bitnamicharts/<chart>
 apiVersion: source.toolkit.fluxcd.io/v1
-kind: HelmRepository
+kind: OCIRepository
 metadata:
-  name: bitnami
+  name: bitnami-nginx
   namespace: flux-system
 spec:
   interval: 24h
-  url: https://charts.bitnami.com/bitnami
+  url: oci://registry-1.docker.io/bitnamicharts/nginx

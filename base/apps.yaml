@@ -69,6 +69,9 @@ metadata:
   name: flux-resources
   namespace: flux-system
 spec:
+  dependsOn:
+    - name: prometheus-crds
+      namespace: flux-system
   interval: 10m
   sourceRef:
     kind: GitRepository
