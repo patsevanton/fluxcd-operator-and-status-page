@@ -33,8 +33,13 @@ spec:
   values:
     kubeControllerManager:
       enabled: false
+    # etcd не в кластере (managed k8s и т.п.) — scrape даёт 0 targets и предупреждение vmagent
+    kubeEtcd:
+      enabled: false
     defaultRules:
       groups:
+        etcd:
+          create: false
         kubeControllerManager:
           create: false
         kubeScheduler:
