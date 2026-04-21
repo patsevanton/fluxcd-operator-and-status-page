@@ -16,10 +16,35 @@
       "sourceType": "github",
       "computedHash": "6956636eab9a2a0f102926ba7ac0cdaffa5fdccb8061a428aec1ae0874b8820b"
     },
+    "gitops-cluster-debug": {
+      "source": "fluxcd/agent-skills",
+      "sourceType": "github",
+      "computedHash": "df5af651e2834e8d98c0db1d46788dbaa06bf8c30845770106384b04f4d39622"
+    },
+    "gitops-knowledge": {
+      "source": "fluxcd/agent-skills",
+      "sourceType": "github",
+      "computedHash": "ad5e8695e51ed6aed833129734db668b5a863fdb6acd0689dd4a8b24e9984bbe"
+    },
+    "gitops-repo-audit": {
+      "source": "fluxcd/agent-skills",
+      "sourceType": "github",
+      "computedHash": "47259690c8a7b3ad1b150883220f95d55af9880d2feb45c0050597037a21d0ab"
+    },
+    "shell-check": {
+      "source": "controlplaneio-fluxcd/flux-operator",
+      "sourceType": "github",
+      "computedHash": "a90372bbad24e72f7020fe591f3a9cc9a5edd8dfd2f042b8a62e7258b5ddd9ed"
+    },
     "technical-writer": {
       "source": "Shubhamsaboo/awesome-llm-apps",
       "sourceType": "github",
       "computedHash": "e1ccd2334efd9b2137844568db30b0a1c6679404b474c216476c59e22ad08c28"
+    },
+    "yaml-check": {
+      "source": "controlplaneio-fluxcd/flux-operator",
+      "sourceType": "github",
+      "computedHash": "5c5d833bba9d796d940127d336d4e62e9d783afbc93e83d51b559e00c26fbb1b"
     }
   }
 }
