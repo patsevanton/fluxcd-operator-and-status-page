@@ -33,6 +33,9 @@ spec:
   values:
     kubeControllerManager:
       enabled: false
+    # scheduler control plane вне кластера (managed k8s) — иначе VMServiceScrape без целей и предупреждение vmagent
+    kubeScheduler:
+      enabled: false
     # etcd не в кластере (managed k8s и т.п.) — scrape даёт 0 targets и предупреждение vmagent
     kubeEtcd:
       enabled: false
