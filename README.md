@@ -278,11 +278,13 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
 - flux-instance.yaml
+- flux-notifications.yaml
+- podmonitor.yaml
 EOF
 ```
 
 ```bash
-git add base/flux-system/kustomization.yaml base/flux-system/flux-instance.yaml
+git add base/flux-system/kustomization.yaml base/flux-system/flux-instance.yaml base/flux-system/flux-notifications.yaml base/flux-system/podmonitor.yaml
 ```
 
 Закоммитьте изменения.
@@ -399,6 +401,48 @@ GitRepository/flux-system/flux-system configured
 
 ### `base/flux-system/flux-notifications.yaml`: Flux → Alertmanager
 
+Создайте файл `base/flux-system/flux-notifications.yaml`:
+
+```bash
+cat <<'EOF' > base/flux-system/flux-notifications.yaml
+# Flux notification-controller → Prometheus Alertmanager (VMAlertmanager из victoria-metrics-k8s-stack).
+# События с severity error попадают в Alertmanager; Grafana их видит через datasource Alertmanager.
+---
+apiVersion: notification.toolkit.fluxcd.io/v1beta3
+kind: Provider
+metadata:
+  name: alertmanager
+  namespace: flux-system
+spec:
+  type: alertmanager
+  # VMAlertmanager CR: vmks-victoria-metrics-k8s-stack (release vmks, chart victoria-metrics-k8s-stack), ns vmks
+  address: http://vmalertmanager-vmks-victoria-metrics-k8s-stack.vmks.svc.cluster.local:9093/api/v2/alerts
+---
+apiVersion: notification.toolkit.fluxcd.io/v1beta3
+kind: Alert
+metadata:
+  name: flux-to-alertmanager
+  namespace: flux-system
+spec:
+  providerRef:
+    name: alertmanager
+  eventSeverity: error
+  eventSources:
+    - kind: GitRepository
+      name: "*"
+    - kind: OCIRepository
+      name: "*"
+    - kind: HelmRepository
+      name: "*"
+    - kind: HelmChart
+      name: "*"
+    - kind: HelmRelease
+      name: "*"
+    - kind: Kustomization
+      name: "*"
+EOF
+```
+
 Файл подключается через [base/flux-system/kustomization.yaml](base/flux-system/kustomization.yaml) и создаёт в `flux-system`:
 
 - **`Provider`** `alertmanager` — тип `alertmanager`, адрес HTTP API VMAlertmanager из [VictoriaMetrics K8s Stack](https://github.com/VictoriaMetrics/helm-charts/tree/master/charts/victoria-metrics-k8s-stack) (в манифесте задан сервис релиза `vmks-victoria-metrics-k8s-stack` в namespace `vmks`).
@@ -454,6 +498,37 @@ kubectl get crd alerts.notification.toolkit.fluxcd.io
 Если команды возвращают `NotFound`, контроллер уведомлений или установка Flux не завершена — смотрите `FluxInstance` и поды `notification-controller` в `flux-system`.
 
 ### Метрики
+
+Создайте файл `base/flux-system/podmonitor.yaml` для сбора метрик:
+
+```bash
+cat <<'EOF' > base/flux-system/podmonitor.yaml
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: flux-system
+  labels:
+    app.kubernetes.io/part-of: flux
+    app.kubernetes.io/component: monitoring
+spec:
+  namespaceSelector:
+    matchNames:
+      - flux-system
+  selector:
+    matchExpressions:
+      - key: app
+        operator: In
+        values:
+          - helm-controller
+          - source-controller
+          - kustomize-controller
+          - notification-controller
+          - image-automation-controller
+          - image-reflector-controller
+  podMetricsEndpoints:
+    - port: http-prom
+EOF
+```
 
 Для Prometheus Operator: `serviceMonitor.create=true` в `values`. Подробнее: [Flux Monitoring and Reporting](https://fluxcd.control-plane.io/operator/monitoring).
 
