@@ -195,14 +195,32 @@ spec:
 EOF
 ```
 
-Закоммитьте изменения и дождитесь синхронизации:
+Закоммитьте изменения
 
 ```bash
 git add .
 git commit -m "Add flux-operator manifests"
 git push
+```
+
+Дождитесь синхронизации:
+```bash
 flux get kustomizations -n flux-system
+NAME            	REVISION          	SUSPENDED	READY	MESSAGE                              
+broken-demo     	main@sha1:191d15f8	False    	True 	Applied revision: main@sha1:191d15f8	
+flux-operator   	main@sha1:191d15f8	False    	True 	Applied revision: main@sha1:191d15f8	
+flux-system     	main@sha1:191d15f8	False    	True 	Applied revision: main@sha1:191d15f8	
+prometheus-crds 	main@sha1:191d15f8	False    	True 	Applied revision: main@sha1:191d15f8	
+victoria-metrics	main@sha1:191d15f8	False    	True 	Applied revision: main@sha1:191d15f8	
+```
+
+```bash
 flux get helmreleases -n flux-system
+NAME                    	REVISION	SUSPENDED	READY	MESSAGE                                                                                                                 
+broken-demo             	        	False    	False	HelmChart 'flux-system/flux-system-broken-demo' is not ready: no artifact available for HelmRepository source 'bitnami'	
+flux-operator           	0.47.0  	False    	True 	Helm install succeeded for release flux-system/flux-operator.v1 with chart flux-operator@0.47.0                        	
+prometheus-operator-crds	28.0.1  	False    	True 	Helm install succeeded for release flux-system/prometheus-operator-crds.v1 with chart prometheus-operator-crds@28.0.1  	
+vmks                    	0.74.1  	False    	True 	Helm upgrade succeeded for release vmks/vmks.v2 with chart victoria-metrics-k8s-stack@0.74.1  
 ```
 
 ### Создание FluxInstance
