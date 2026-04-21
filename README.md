@@ -302,6 +302,7 @@ git add base/flux-system/kustomization.yaml base/flux-system/flux-instance.yaml
 
 ```bash
 git commit -m "Moved Flux resources"
+git push
 ```
 
 
