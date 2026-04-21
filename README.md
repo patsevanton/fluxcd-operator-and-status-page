@@ -415,7 +415,7 @@ GitRepository/flux-system/flux-system configured
 
 Уведомления (Slack, Teams и др.) можно настроить через `notification-controller` и CRD `Provider/Alert`. Подробнее: [Provider/Alert](https://fluxoperator.dev/docs/crd/provider).
 
-### `apps/flux-resources/flux-notifications.yaml`: Flux → Alertmanager
+### Уведомления Flux в Alertmanager
 
 Создайте файл `apps/flux-resources/flux-notifications.yaml`:
 
