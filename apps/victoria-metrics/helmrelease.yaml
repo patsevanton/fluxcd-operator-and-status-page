@@ -31,6 +31,8 @@ spec:
       interval: 15m
   releaseName: vmks
   values:
+    kubeControllerManager:
+      enabled: false
     defaultRules:
       groups:
         kubeControllerManager:
