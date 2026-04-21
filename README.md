@@ -567,6 +567,7 @@ apiVersion: monitoring.coreos.com/v1
 kind: PodMonitor
 metadata:
   name: flux-system
+  namespace: flux-system
   labels:
     app.kubernetes.io/part-of: flux
     app.kubernetes.io/component: monitoring
@@ -618,10 +619,11 @@ git push
 flux get kustomizations -n flux-system flux-resources
 ```
 
-При необходимости детали и события:
+При необходимости детали и события (в стандартном `flux` нет подкоманды `describe`):
 
 ```bash
-flux describe kustomization flux-resources -n flux-system
+kubectl describe kustomization flux-resources -n flux-system
+kubectl get events -n flux-system --field-selector involvedObject.name=flux-resources --sort-by='.lastTimestamp' | tail -n 20
 ```
 
 CRD **PodMonitor** (Prometheus Operator / совместимый стек):
@@ -631,18 +633,18 @@ kubectl get crd podmonitors.monitoring.coreos.com
 kubectl api-resources --api-group=monitoring.coreos.com | grep -i podmonitor
 ```
 
-Объект **PodMonitor** в кластере (в манифесте выше нет `metadata.namespace`, поэтому ресурс обычно создаётся в **`default`**):
+Объект **PodMonitor** в кластере (как и `Provider`/`Alert` из этого же пути, ресурс должен быть в **`flux-system`**; без `metadata.namespace` Flux при применении может выдать ошибку вида `PodMonitor/... namespace not specified`):
 
 ```bash
-kubectl get podmonitor -A
-kubectl get podmonitor -A -o wide | grep flux-system
-kubectl describe podmonitor flux-system -n default
+kubectl get podmonitor -n flux-system
+kubectl get podmonitor -n flux-system -o wide
+kubectl describe podmonitor flux-system -n flux-system
 ```
 
 Локально из корня репозитория — что попадает в сборку kustomize:
 
 ```bash
-kubectl kustomize apps/flux-resources | grep -E 'kind: PodMonitor|name: flux-system|http-prom'
+kubectl kustomize apps/flux-resources | grep -E 'kind: PodMonitor|name: flux-system|namespace: flux-system|http-prom'
 ```
 
 Поды Flux в `flux-system` и порт метрик **`http-prom`**:
