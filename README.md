@@ -16,9 +16,10 @@
 
 | Путь | Роль |
 |------|------|
-| [base/kustomization.yaml](base/kustomization.yaml) | Корневой kustomize: `flux-system` + [apps.yaml](base/apps.yaml) |
+| [base/kustomization.yaml](base/kustomization.yaml) | Корневой kustomize: `flux-system` + `flux-resources` + [apps.yaml](base/apps.yaml) |
 | [base/apps.yaml](base/apps.yaml) | Flux `Kustomization`: **victoria-metrics**, **prometheus-crds**, **flux-operator** |
-| [base/flux-system/](base/flux-system/) | Классический bootstrap: `gotk-components.yaml`, [gotk-sync.yaml](base/flux-system/gotk-sync.yaml). После перехода на оператор — [flux-instance.yaml](base/flux-system/flux-instance.yaml), уведомления — [flux-notifications.yaml](base/flux-system/flux-notifications.yaml) |
+| [base/flux-system/](base/flux-system/) | Классический bootstrap: `gotk-components.yaml`, [gotk-sync.yaml](base/flux-system/gotk-sync.yaml). После перехода на оператор каталог лучше оставить только для bootstrap и [flux-instance.yaml](base/flux-system/flux-instance.yaml) |
+| `base/flux-resources/` | Пользовательские ресурсы для namespace `flux-system`: `flux-notifications.yaml`, `podmonitor.yaml` |
 | [apps/](apps/) | [apps/kustomization.yaml](apps/kustomization.yaml) — локальный `kustomize build apps/` |
 
 **Нюанс раскладки:** при первом `flux bootstrap` CLI по умолчанию кладёт `flux-system/` в корень репозитория. Содержимое `base/` и `apps/` вы коммитите в Git до или после bootstrap — главное, чтобы путь в bootstrap совпадал с тем, что ожидает кластер.
@@ -261,7 +262,7 @@ source-controller-7846484bbc-6rfg5         1/1     Running   0          2m19s
 
 Полный переход в Git фиксируется после очистки `gotk-*` и обновления `base/flux-system/kustomization.yaml` на `flux-instance.yaml`.
 
-Удалите артефакты классического bootstrap и переключите `base/flux-system/kustomization.yaml` на один ресурс — `flux-instance.yaml`.
+Удалите артефакты классического bootstrap и переключите `base/flux-system/kustomization.yaml` на один ресурс — `flux-instance.yaml`. Пользовательские манифесты лучше вынести в отдельный `base/flux-resources/`, чтобы их не приходилось пересоздавать, если перед bootstrap вы удаляете `base/flux-system/`.
 
 Подробнее: [Flux Bootstrap Migration](https://fluxcd.control-plane.io/operator/flux-bootstrap-migration).
 
@@ -270,24 +271,45 @@ git rm base/flux-system/gotk-components.yaml
 git rm base/flux-system/gotk-sync.yaml
 ```
 
-Пересоздайте base/flux-system/kustomization.yaml:
+Пересоздайте `base/flux-system/kustomization.yaml`, создайте отдельный `base/flux-resources/` и подключите его в корневой `base/kustomization.yaml`:
 
 ```bash
+mkdir -p base/flux-resources
+
 cat <<'EOF' > base/flux-system/kustomization.yaml
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
 - flux-instance.yaml
+EOF
+
+cat <<'EOF' > base/flux-resources/kustomization.yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
 - flux-notifications.yaml
 - podmonitor.yaml
+EOF
+
+cat <<'EOF' > base/kustomization.yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- flux-system
+- flux-resources
+- apps.yaml
 EOF
 ```
 
 ```bash
-git add base/flux-system/kustomization.yaml base/flux-system/flux-instance.yaml base/flux-system/flux-notifications.yaml base/flux-system/podmonitor.yaml
+git add base/kustomization.yaml base/flux-system/kustomization.yaml base/flux-system/flux-instance.yaml base/flux-resources/kustomization.yaml base/flux-resources/flux-notifications.yaml base/flux-resources/podmonitor.yaml
 ```
 
 Закоммитьте изменения.
+
+```bash
+git commit -m "Moved Flux resources"
+```
 
 
 ## FluxCD Status Page
@@ -399,12 +421,14 @@ GitRepository/flux-system/flux-system configured
 
 Уведомления (Slack, Teams и др.) можно настроить через `notification-controller` и CRD `Provider/Alert`. Подробнее: [Provider/Alert](https://fluxoperator.dev/docs/crd/provider).
 
-### `base/flux-system/flux-notifications.yaml`: Flux → Alertmanager
+### `base/flux-resources/flux-notifications.yaml`: Flux → Alertmanager
 
-Создайте файл `base/flux-system/flux-notifications.yaml`:
+Создайте файл `base/flux-resources/flux-notifications.yaml`:
 
 ```bash
-cat <<'EOF' > base/flux-system/flux-notifications.yaml
+mkdir -p base/flux-resources
+
+cat <<'EOF' > base/flux-resources/flux-notifications.yaml
 # Flux notification-controller → Prometheus Alertmanager (VMAlertmanager из victoria-metrics-k8s-stack).
 # События с severity error попадают в Alertmanager; Grafana их видит через datasource Alertmanager.
 ---
@@ -443,7 +467,7 @@ spec:
 EOF
 ```
 
-Файл подключается через [base/flux-system/kustomization.yaml](base/flux-system/kustomization.yaml) и создаёт в `flux-system`:
+Файл подключается через `base/flux-resources/kustomization.yaml` и создаёт в `flux-system`:
 
 - **`Provider`** `alertmanager` — тип `alertmanager`, адрес HTTP API VMAlertmanager из [VictoriaMetrics K8s Stack](https://github.com/VictoriaMetrics/helm-charts/tree/master/charts/victoria-metrics-k8s-stack) (в манифесте задан сервис релиза `vmks-victoria-metrics-k8s-stack` в namespace `vmks`).
 - **`Alert`** `flux-to-alertmanager` — события с **severity `error`** от перечисленных источников (`GitRepository`, `OCIRepository`, `HelmRepository`, `HelmChart`, `HelmRelease`, `Kustomization`) отправляются в этот провайдер.
@@ -475,12 +499,12 @@ kubectl -n flux-system get alert flux-to-alertmanager -o yaml
 При необходимости проверьте, что объект попадает в сборку kustomize (локально из корня репозитория):
 
 ```bash
-kubectl kustomize base/flux-system | grep -E 'kind: (Provider|Alert)|name: (alertmanager|flux-to-alertmanager)'
+kubectl kustomize base/flux-resources | grep -E 'kind: (Provider|Alert)|name: (alertmanager|flux-to-alertmanager)'
 ```
 
 #### Проверка, что CRD notification API установлены
 
-CRD ставит дистрибутив Flux (оператор / `FluxInstance`), а не сам файл `flux-notifications.yaml`. Убедитесь, что в кластере есть группа `notification.toolkit.fluxcd.io`:
+CRD ставит дистрибутив Flux (оператор / `FluxInstance`), а не сам файл `base/flux-resources/flux-notifications.yaml`. Убедитесь, что в кластере есть группа `notification.toolkit.fluxcd.io`:
 
 ```bash
 kubectl api-resources --api-group=notification.toolkit.fluxcd.io
@@ -499,10 +523,12 @@ kubectl get crd alerts.notification.toolkit.fluxcd.io
 
 ### Метрики
 
-Создайте файл `base/flux-system/podmonitor.yaml` для сбора метрик:
+Создайте файл `base/flux-resources/podmonitor.yaml` для сбора метрик:
 
 ```bash
-cat <<'EOF' > base/flux-system/podmonitor.yaml
+mkdir -p base/flux-resources
+
+cat <<'EOF' > base/flux-resources/podmonitor.yaml
 apiVersion: monitoring.coreos.com/v1
 kind: PodMonitor
 metadata:
