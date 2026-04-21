@@ -495,6 +495,14 @@ resources:
 EOF
 ```
 
+Закоммитьте изменения и отправьте в удалённый репозиторий:
+
+```bash
+git add apps/flux-resources/ base/apps.yaml
+git commit -m "Add Flux Alertmanager notifications"
+git push
+```
+
 Манифест создаёт в `flux-system`:
 
 - **`Provider`** `alertmanager` — тип `alertmanager`, адрес HTTP API VMAlertmanager из [VictoriaMetrics K8s Stack](https://github.com/VictoriaMetrics/helm-charts/tree/master/charts/victoria-metrics-k8s-stack) (в манифесте задан сервис релиза `vmks-victoria-metrics-k8s-stack` в namespace `vmks`).
