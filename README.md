@@ -198,6 +198,7 @@ EOF
 Закоммитьте изменения и дождитесь синхронизации:
 
 ```bash
+git commit -m "Add flux-operator manifests"
 flux get kustomizations -n flux-system
 flux get helmreleases -n flux-system
 ```
