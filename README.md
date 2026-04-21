@@ -610,6 +610,50 @@ git commit -m "Added PodMonitor for Flux"
 git push
 ```
 
+#### Проверка PodMonitor и метрик
+
+Убедитесь, что `Kustomization` **flux-resources** подтянула ревизию с `podmonitor.yaml`:
+
+```bash
+flux get kustomizations -n flux-system flux-resources
+```
+
+При необходимости детали и события:
+
+```bash
+flux describe kustomization flux-resources -n flux-system
+```
+
+CRD **PodMonitor** (Prometheus Operator / совместимый стек):
+
+```bash
+kubectl get crd podmonitors.monitoring.coreos.com
+kubectl api-resources --api-group=monitoring.coreos.com | grep -i podmonitor
+```
+
+Объект **PodMonitor** в кластере (в манифесте выше нет `metadata.namespace`, поэтому ресурс обычно создаётся в **`default`**):
+
+```bash
+kubectl get podmonitor -A
+kubectl get podmonitor -A -o wide | grep flux-system
+kubectl describe podmonitor flux-system -n default
+```
+
+Локально из корня репозитория — что попадает в сборку kustomize:
+
+```bash
+kubectl kustomize apps/flux-resources | grep -E 'kind: PodMonitor|name: flux-system|http-prom'
+```
+
+Поды Flux в `flux-system` и порт метрик **`http-prom`**:
+
+```bash
+kubectl get pods -n flux-system -l 'app in (helm-controller,source-controller,kustomize-controller,notification-controller,image-automation-controller,image-reflector-controller)' -o wide
+kubectl get pods -n flux-system -l app=source-controller -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{range .spec.containers[*].ports[*]}{.name}{" "}{end}{"\n"}{end}'
+```
+
+Если в кластере VictoriaMetrics K8s Stack или другой сборщик с UI, проверьте активные таргеты и наличие метрик от подов `flux-system` (например в Grafana Explore).
+
 Для Prometheus Operator: `serviceMonitor.create=true` в `values`. Подробнее: [Flux Monitoring and Reporting](https://fluxcd.control-plane.io/operator/monitoring).
 
 ## Устранение неполадок
