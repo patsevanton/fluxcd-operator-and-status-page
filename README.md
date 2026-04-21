@@ -279,8 +279,8 @@ source-controller-7846484bbc-6rfg5         1/1     Running   0          2m19s
 Подробнее: [Flux Bootstrap Migration](https://fluxcd.control-plane.io/operator/flux-bootstrap-migration).
 
 ```bash
-git rm base/flux-system/gotk-components.yaml
-git rm base/flux-system/gotk-sync.yaml
+rm base/flux-system/gotk-components.yaml
+rm base/flux-system/gotk-sync.yaml
 ```
 
 Пересоздайте `base/flux-system/kustomization.yaml`, создайте отдельный `base/flux-resources/` и подключите его в корневой `base/kustomization.yaml`:
@@ -298,9 +298,7 @@ EOF
 cat <<'EOF' > base/flux-resources/kustomization.yaml
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-resources:
-- flux-notifications.yaml
-- podmonitor.yaml
+# Добавьте пользовательские ресурсы позже, когда создадите их файлы.
 EOF
 
 cat <<'EOF' > base/kustomization.yaml
@@ -314,8 +312,10 @@ EOF
 ```
 
 ```bash
-git add base/kustomization.yaml base/flux-system/kustomization.yaml base/flux-system/flux-instance.yaml base/flux-resources/kustomization.yaml base/flux-resources/flux-notifications.yaml base/flux-resources/podmonitor.yaml
+git add base/kustomization.yaml base/flux-system/kustomization.yaml base/flux-system/flux-instance.yaml base/flux-resources/kustomization.yaml
 ```
+
+`flux-notifications.yaml` и `podmonitor.yaml` создаются ниже в соответствующих разделах, поэтому добавьте их отдельным коммитом после создания.
 
 Закоммитьте изменения.
 
@@ -479,7 +479,18 @@ spec:
 EOF
 ```
 
-Файл подключается через `base/flux-resources/kustomization.yaml` и создаёт в `flux-system`:
+После этого подключите файл в `base/flux-resources/kustomization.yaml`:
+
+```bash
+cat <<'EOF' > base/flux-resources/kustomization.yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- flux-notifications.yaml
+EOF
+```
+
+Манифест создаёт в `flux-system`:
 
 - **`Provider`** `alertmanager` — тип `alertmanager`, адрес HTTP API VMAlertmanager из [VictoriaMetrics K8s Stack](https://github.com/VictoriaMetrics/helm-charts/tree/master/charts/victoria-metrics-k8s-stack) (в манифесте задан сервис релиза `vmks-victoria-metrics-k8s-stack` в namespace `vmks`).
 - **`Alert`** `flux-to-alertmanager` — события с **severity `error`** от перечисленных источников (`GitRepository`, `OCIRepository`, `HelmRepository`, `HelmChart`, `HelmRelease`, `Kustomization`) отправляются в этот провайдер.
@@ -565,6 +576,18 @@ spec:
           - image-reflector-controller
   podMetricsEndpoints:
     - port: http-prom
+EOF
+```
+
+Обновите `base/flux-resources/kustomization.yaml`, чтобы подключить оба пользовательских ресурса:
+
+```bash
+cat <<'EOF' > base/flux-resources/kustomization.yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- flux-notifications.yaml
+- podmonitor.yaml
 EOF
 ```
 
