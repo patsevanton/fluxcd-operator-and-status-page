@@ -46,38 +46,3 @@ spec:
   prune: true
   wait: true
   timeout: 5m
----
-apiVersion: kustomize.toolkit.fluxcd.io/v1
-kind: Kustomization
-metadata:
-  name: flux-operator
-  namespace: flux-system
-spec:
-  interval: 10m
-  sourceRef:
-    kind: GitRepository
-    name: flux-system
-  serviceAccountName: kustomize-controller
-  path: ./apps/flux-operator
-  prune: true
-  wait: true
-  timeout: 10m
----
-apiVersion: kustomize.toolkit.fluxcd.io/v1
-kind: Kustomization
-metadata:
-  name: flux-resources
-  namespace: flux-system
-spec:
-  dependsOn:
-    - name: prometheus-crds
-      namespace: flux-system
-  interval: 10m
-  sourceRef:
-    kind: GitRepository
-    name: flux-system
-  serviceAccountName: kustomize-controller
-  path: ./apps/flux-resources
-  prune: true
-  wait: true
-  timeout: 5m
