@@ -7,40 +7,6 @@ spec:
   distribution:
     version: "2.8.x"
     registry: "ghcr.io/fluxcd"
-  # Включает экспорт метрики gotk_resource_info, без которой дашборд
-  # Flux Cluster Stats показывает "No data" (счётчики и таблицы статуса
-  # ресурсов зависят именно от этой метрики). Feature gate StatusMetrics
-  # добавляется через kustomize patches, т.к. в FluxInstance нет поля featureGates.
-  kustomize:
-    patches:
-      - patch: |
-          - op: replace
-            path: /spec/template/spec/containers/0/args/5
-            value: --feature-gates=ObjectLevelWorkloadIdentity=false,StatusMetrics=true
-        target:
-          name: helm-controller
-          kind: Deployment
-      - patch: |
-          - op: replace
-            path: /spec/template/spec/containers/0/args/5
-            value: --feature-gates=ObjectLevelWorkloadIdentity=false,StatusMetrics=true
-        target:
-          name: kustomize-controller
-          kind: Deployment
-      - patch: |
-          - op: replace
-            path: /spec/template/spec/containers/0/args/7
-            value: --feature-gates=ObjectLevelWorkloadIdentity=false,StatusMetrics=true
-        target:
-          name: source-controller
-          kind: Deployment
-      - patch: |
-          - op: replace
-            path: /spec/template/spec/containers/0/args/4
-            value: --feature-gates=ObjectLevelWorkloadIdentity=false,StatusMetrics=true
-        target:
-          name: notification-controller
-          kind: Deployment
   components:
     - source-controller
     - kustomize-controller
