@@ -76,11 +76,7 @@ git pull
 Flux уже синхронизирует ваши приложения. `flux get all -A` показывает состояние всех ресурсов FluxCD.
 
 Команда ниже показывает состояние всех ресурсов FluxCD на которые стоит обратить внимание.
-```bash
-flux get all -A | grep -v "succeeded" | grep -v Applied | grep -v pulled | grep -v "stored artifact" | grep -v Ready
-```
-
-Пример вывода. Видно что broken-demo сломан. broken-demo нужен для тестирования алертов FluxCD.
+Видно что broken-demo сломан. broken-demo нужен для тестирования алертов FluxCD.
 ```
 flux get all -A | grep -v "succeeded" | grep -v Applied | grep -v pulled | grep -v "stored artifact" | grep -v Ready
 NAMESPACE  	NAME                     	REVISION          	SUSPENDED	READY	MESSAGE                                           
