@@ -457,7 +457,7 @@ EOF
 Закоммитьте изменения и отправьте в удалённый репозиторий:
 
 ```bash
-git add apps/flux-resources/ base/apps.yaml
+git add .
 git commit -m "Add Flux Alertmanager notifications"
 git push
 ```
