@@ -340,18 +340,17 @@ git push
 Ресурс `FluxReport` `flux` в `flux-system` (обновление по умолчанию раз в 5 минут):
 
 ```bash
-kubectl -n flux-system get fluxreport/flux -o yaml | head -n 20
 apiVersion: fluxcd.controlplane.io/v1
 kind: FluxReport
 metadata:
   annotations:
-    reconcile.fluxcd.io/requestedAt: "1776695025"
-  creationTimestamp: "2026-04-20T14:12:54Z"
-  generation: 5
+    reconcile.fluxcd.io/requestedAt: "1777814067"
+  creationTimestamp: "2026-05-03T12:18:48Z"
+  generation: 7
   name: flux
   namespace: flux-system
-  resourceVersion: "15876"
-  uid: e4135b2f-95a5-41b7-970f-61273b8a3b46
+  resourceVersion: "46482"
+  uid: fe113d16-e144-433b-a666-53a94a042b5c
 spec:
   cluster:
     nodes: 3
@@ -370,44 +369,7 @@ spec:
 ```bash
 kubectl -n flux-system events --for fluxinstance/flux
 LAST SEEN   TYPE     REASON                    OBJECT              MESSAGE
-3m22s       Normal   Progressing               FluxInstance/flux   Installing revision v2.8.5@sha256:df269637e1cbd79f25263d77f754ec782afb780ad197f4732771f661ceb73f3f
-2m33s       Normal   ReconciliationSucceeded   FluxInstance/flux   Flux v2.8.5 installed
-CustomResourceDefinition/alerts.notification.toolkit.fluxcd.io configured
-CustomResourceDefinition/buckets.source.toolkit.fluxcd.io configured
-CustomResourceDefinition/externalartifacts.source.toolkit.fluxcd.io configured
-CustomResourceDefinition/gitrepositories.source.toolkit.fluxcd.io configured
-CustomResourceDefinition/helmcharts.source.toolkit.fluxcd.io configured
-CustomResourceDefinition/helmreleases.helm.toolkit.fluxcd.io configured
-CustomResourceDefinition/helmrepositories.source.toolkit.fluxcd.io configured
-CustomResourceDefinition/kustomizations.kustomize.toolkit.fluxcd.io configured
-CustomResourceDefinition/ocirepositories.source.toolkit.fluxcd.io configured
-CustomResourceDefinition/providers.notification.toolkit.fluxcd.io configured
-CustomResourceDefinition/receivers.notification.toolkit.fluxcd.io configured
-Namespace/flux-system configured
-ClusterRole/crd-controller-flux-system configured
-ClusterRole/flux-edit-flux-system configured
-ClusterRole/flux-view-flux-system configured
-ClusterRoleBinding/cluster-reconciler-flux-system configured
-ClusterRoleBinding/crd-controller-flux-system configured
-ResourceQuota/flux-system/critical-pods-flux-system configured
-ServiceAccount/flux-system/helm-controller configured
-ServiceAccount/flux-system/kustomize-controller configured
-ServiceAccount/flux-system/notification-controller configured
-ServiceAccount/flux-system/source-controller configured
-Service/flux-system/notification-controller configured
-Service/flux-system/source-controller configured
-Service/flux-system/webhook-receiver configured
-Deployment/flux-system/helm-controller configured
-Deployment/flux-system/kustomize-controller configured
-Deployment/flux-system/notification-controller configured
-Deployment/flux-system/source-controller configured
-Kustomization/flux-system/flux-system configured
-NetworkPolicy/flux-system/allow-egress configured
-NetworkPolicy/flux-system/allow-scraping configured
-NetworkPolicy/flux-system/allow-webhooks configured
-GitRepository/flux-system/flux-system configured
-2m33s       Normal   ReconciliationSucceeded   FluxInstance/flux   Reconciliation finished in 50s
-10s         Normal   ReconciliationSucceeded   FluxInstance/flux   Reconciliation finished in 2s
+43m         Normal   ReconciliationSucceeded   FluxInstance/flux   Reconciliation finished in 2s
 ```
 
 Уведомления (Slack, Teams и др.) можно настроить через `notification-controller` и CRD `Provider/Alert`. Подробнее: [Provider/Alert](https://fluxoperator.dev/docs/crd/provider).
