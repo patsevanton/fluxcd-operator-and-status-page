@@ -290,7 +290,7 @@ EOF
 ```
 
 ```bash
-git add base/flux-system/kustomization.yaml base/flux-system/flux-instance.yaml
+git add .
 ```
 
 Пользовательские ресурсы (`flux-notifications.yaml` и `podmonitor.yaml`) создаются ниже в соответствующих разделах.
