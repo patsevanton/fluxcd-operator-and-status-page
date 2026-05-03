@@ -7,6 +7,11 @@ spec:
   distribution:
     version: "2.8.x"
     registry: "ghcr.io/fluxcd"
+  # Включает экспорт метрики gotk_resource_info, без которой дашборд
+  # Flux Cluster Stats показывает "No data" (счётчики и таблицы статуса
+  # ресурсов зависят именно от этой метрики).
+  featureGates:
+    - StatusMetrics
   components:
     - source-controller
     - kustomize-controller
