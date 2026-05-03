@@ -639,7 +639,7 @@ EOF
 Зафиксируйте изменения и отправьте их в удалённый репозиторий:
 
 ```bash
-git add apps/flux-resources/
+git add .
 git commit -m "Added PodMonitor for Flux"
 git push
 ```
