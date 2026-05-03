@@ -650,41 +650,125 @@ git push
 
 ```bash
 flux get kustomizations -n flux-system flux-resources
+NAME          	REVISION                     	SUSPENDED	READY	MESSAGE                                         
+flux-resources	refs/heads/main@sha1:429293c9	False    	True 	Applied revision: refs/heads/main@sha1:429293c9	
 ```
 
 При необходимости детали и события (в стандартном `flux` нет подкоманды `describe`):
 
 ```bash
-kubectl describe kustomization flux-resources -n flux-system
+kubectl describe kustomization flux-resources -n flux-system | grep ReconciliationSucceeded
+    Reason:                ReconciliationSucceeded
+    Last Reconciled Status:    ReconciliationSucceeded
+    Last Reconciled Status:    ReconciliationSucceeded
+  Normal  ReconciliationSucceeded  5m26s  kustomize-controller  Reconciliation finished in 204.558291ms, next run in 10m0s
+  Normal  ReconciliationSucceeded  81s    kustomize-controller  Reconciliation finished in 241.056785ms, next run in 10m0s
+  Normal  ReconciliationSucceeded  17s    kustomize-controller  Reconciliation finished in 334.747203ms, next run in 10m0s
+```
+
+
+```bash
 kubectl get events -n flux-system --field-selector involvedObject.name=flux-resources --sort-by='.lastTimestamp' | tail -n 20
+LAST SEEN   TYPE     REASON                    OBJECT                         MESSAGE
+5m46s       Normal   Progressing               kustomization/flux-resources   Alert/flux-system/flux-to-alertmanager created...
+5m46s       Normal   Progressing               kustomization/flux-resources   Health check passed in 32.876003ms
+5m46s       Normal   ReconciliationSucceeded   kustomization/flux-resources   Reconciliation finished in 204.558291ms, next run in 10m0s
+101s        Normal   ReconciliationSucceeded   kustomization/flux-resources   Reconciliation finished in 241.056785ms, next run in 10m0s
+38s         Normal   Progressing               kustomization/flux-resources   PodMonitor/flux-system/flux-system created
+38s         Normal   Progressing               kustomization/flux-resources   Health check passed in 100.046212ms
+37s         Normal   ReconciliationSucceeded   kustomization/flux-resources   Reconciliation finished in 334.747203ms, next run in 10m0s
 ```
 
 CRD **PodMonitor** (Prometheus Operator / совместимый стек):
 
 ```bash
 kubectl get crd podmonitors.monitoring.coreos.com
+NAME                                CREATED AT
+podmonitors.monitoring.coreos.com   2026-05-03T12:05:56Z
+```
+
+```bash
+```
 kubectl api-resources --api-group=monitoring.coreos.com | grep -i podmonitor
+podmonitors           pmon         monitoring.coreos.com/v1         true         PodMonitor
 ```
 
 Объект **PodMonitor** в кластере (как и `Provider`/`Alert` из этого же пути, ресурс должен быть в **`flux-system`**; без `metadata.namespace` Flux при применении может выдать ошибку вида `PodMonitor/... namespace not specified`):
 
 ```bash
 kubectl get podmonitor -n flux-system
+NAME          AGE
+flux-system   84s
+```
+
+```bash
 kubectl get podmonitor -n flux-system -o wide
+NAME          AGE
+flux-system   3m25s
+```
+
+```bash
 kubectl describe podmonitor flux-system -n flux-system
+Name:         flux-system
+Namespace:    flux-system
+Labels:       app.kubernetes.io/component=monitoring
+              app.kubernetes.io/part-of=flux
+              kustomize.toolkit.fluxcd.io/name=flux-resources
+              kustomize.toolkit.fluxcd.io/namespace=flux-system
+Annotations:  <none>
+API Version:  monitoring.coreos.com/v1
+Kind:         PodMonitor
+Metadata:
+  Creation Timestamp:  2026-05-03T14:14:54Z
+  Generation:          1
+  Resource Version:    54801
+  UID:                 601a63ec-4b61-4349-9096-ffc38fdc7b33
+Spec:
+  Namespace Selector:
+    Match Names:
+      flux-system
+  Pod Metrics Endpoints:
+    Port:  http-prom
+  Selector:
+    Match Expressions:
+      Key:       app
+      Operator:  In
+      Values:
+        helm-controller
+        source-controller
+        kustomize-controller
+        notification-controller
+        image-automation-controller
+        image-reflector-controller
+Events:  <none>
 ```
 
 Локально из корня репозитория — что попадает в сборку kustomize:
 
 ```bash
 kubectl kustomize apps/flux-resources | grep -E 'kind: PodMonitor|name: flux-system|namespace: flux-system|http-prom'
+kind: PodMonitor
+  name: flux-system
+  namespace: flux-system
+  - port: http-prom
+  namespace: flux-system
+  namespace: flux-system
 ```
 
 Поды Flux в `flux-system` и порт метрик **`http-prom`**:
 
 ```bash
 kubectl get pods -n flux-system -l 'app in (helm-controller,source-controller,kustomize-controller,notification-controller,image-automation-controller,image-reflector-controller)' -o wide
+NAME                                       READY   STATUS    RESTARTS   AGE    IP              NODE                        NOMINATED NODE   READINESS GATES
+helm-controller-65ff4c7c98-sgtg7           1/1     Running   0          118m   10.112.130.12   cl1lo7src0ijsb1bv4i6-ehuw   <none>           <none>
+kustomize-controller-59fc467858-c8phv      1/1     Running   0          118m   10.112.129.11   cl1lo7src0ijsb1bv4i6-oban   <none>           <none>
+notification-controller-6d66bb7797-2rm5f   1/1     Running   0          118m   10.112.130.13   cl1lo7src0ijsb1bv4i6-ehuw   <none>           <none>
+source-controller-7846484bbc-j88ww         1/1     Running   0          118m   10.112.129.12   cl1lo7src0ijsb1bv4i6-oban   <none>           <none>
+```
+
+```bash
 kubectl get pods -n flux-system -l app=source-controller -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{range .spec.containers[*].ports[*]}{.name}{" "}{end}{"\n"}{end}'
+source-controller-7846484bbc-j88ww	http http-prom healthz 
 ```
 
 Если в кластере VictoriaMetrics K8s Stack или другой сборщик с UI, проверьте активные таргеты и наличие метрик от подов `flux-system` (например в Grafana Explore).
