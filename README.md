@@ -12,7 +12,7 @@
 
 Здесь зафиксирован путь от классического bootstrap к **[Flux Operator](https://fluxoperator.dev/)** (**FluxInstance**) и **FluxCD Status Page**.
 
-## Как устроен репозиторий FluxCD у меня
+## Как устроен репозиторий FluxCD до установки FluxCD operator
 
 | Путь | Роль |
 |------|------|
