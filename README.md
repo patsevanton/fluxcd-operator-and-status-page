@@ -16,9 +16,9 @@
 
 | Путь | Роль |
 |------|------|
-| [base/apps.yaml](base/apps.yaml) | Flux `Kustomization`: **victoria-metrics**, **prometheus-crds**, **flux-operator**, **flux-resources** |
+| [base/apps.yaml](base/apps.yaml) | Flux `Kustomization`: **victoria-metrics**, **prometheus-crds** |
 | [base/flux-system/](base/flux-system/) | Классический bootstrap: `gotk-components.yaml`, [gotk-sync.yaml](base/flux-system/gotk-sync.yaml). После перехода на оператор каталог лучше оставить только для bootstrap и [flux-instance.yaml](base/flux-system/flux-instance.yaml) |
-| [apps/](apps/) | [apps/kustomization.yaml](apps/kustomization.yaml) — локальный `kustomize build apps/`. Содержит `apps/flux-resources/` для пользовательских ресурсов `flux-system`: `flux-notifications.yaml`, `podmonitor.yaml` |
+| [apps/](apps/) | [apps/kustomization.yaml](apps/kustomization.yaml) — локальный `kustomize build apps/`. |
 
 **Нюанс раскладки:** при первом `flux bootstrap` CLI по умолчанию кладёт `flux-system/` в корень репозитория. Содержимое `base/` и `apps/` вы коммитите в Git до или после bootstrap — главное, чтобы путь в bootstrap совпадал с тем, что ожидает кластер.
 
@@ -267,7 +267,7 @@ source-controller-7846484bbc-6rfg5         1/1     Running   0          2m19s
 
 Полный переход в Git фиксируется после очистки `gotk-*` и обновления `base/flux-system/kustomization.yaml` на `flux-instance.yaml`.
 
-Удалите артефакты классического bootstrap и переключите `base/flux-system/kustomization.yaml` на один ресурс — `flux-instance.yaml`. Пользовательские манифесты лучше вынести в отдельный `apps/flux-resources/`, чтобы их не приходилось пересоздавать, если перед bootstrap вы удаляете `base/flux-system/`.
+Удалите артефакты классического bootstrap и переключите `base/flux-system/kustomization.yaml` на один ресурс — `flux-instance.yaml`.
 
 Подробнее: [Flux Bootstrap Migration](https://fluxcd.control-plane.io/operator/flux-bootstrap-migration).
 
