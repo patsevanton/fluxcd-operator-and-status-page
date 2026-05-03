@@ -98,17 +98,19 @@ flux-system	kustomization/broken-demo     	                  	False    	False	He
 flux get helmreleases -n flux-system
 NAME                    	REVISION	SUSPENDED	READY	MESSAGE                                                                                                               
 prometheus-operator-crds	28.0.1  	False    	True 	Helm install succeeded for release flux-system/prometheus-operator-crds.v1 with chart prometheus-operator-crds@28.0.1
-vmks                    	0.74.1  	False    	True 	Helm upgrade succeeded for release vmks/vmks.v2 with chart victoria-metrics-k8s-stack@0.74.1 
+vmks                    	0.74.1  	False    	True 	Helm upgrade succeeded for release vmks/vmks.v2 with chart victoria-metrics-k8s-stack@0.74.1  
 ```
 
 ```bash
 flux get kustomizations -A
-NAMESPACE  	NAME            	REVISION          	SUSPENDED	READY	MESSAGE                                                                                                                                                                                                                                                                                                                                                                                                                 
+NAMESPACE  	NAME            	REVISION          	SUSPENDED	READY	MESSAGE                                                                                                                                       
 flux-system	broken-demo     	                  	False    	False	HelmRelease/broken-demo/broken-demo dry-run failed (Invalid): HelmRelease.helm.toolkit.fluxcd.io "broken-demo" is invalid: [spec.chart.spec.sourceRef.kind: Unsupported value: "OCIRepository": supported values: "HelmRepository", "GitRepository", "Bucket", <nil>: Invalid value: "null": some validation rules were not checked because the object was invalid; correct the existing errors to complete validation]	
-                                                                                                                                  
-flux-system	flux-system     	main@sha1:71ce4ad3	False    	True 	Applied revision: main@sha1:71ce4ad3                                                                                                                                                                                                                                                  
-flux-system	prometheus-crds 	main@sha1:71ce4ad3	False    	True 	Applied revision: main@sha1:71ce4ad3                                                                                                                                                                                                                          	
-flux-system	victoria-metrics	main@sha1:71ce4ad3	False    	True 	Applied revision: main@sha1:71ce4ad3    
+                                                                          	
+flux-system	flux-system     	main@sha1:05119ed0	False    	True 	Applied revision: main@sha1:05119ed0                                                                                                               
+
+flux-system	prometheus-crds 	main@sha1:05119ed0	False    	True 	Applied revision: main@sha1:05119ed0                                                                                                               
+
+flux-system	victoria-metrics	main@sha1:05119ed0	False    	True 	Applied revision: main@sha1:05119ed0    
 ```
 
 ## Часть 2. Переход на Flux Operator
