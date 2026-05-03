@@ -477,24 +477,87 @@ git push
 flux get kustomizations -n flux-system flux-system
 ```
 
-Должны существовать объекты `Provider` и `Alert`:
+Должны существовать объект `Provider`:
 
 ```bash
 kubectl get providers.notification.toolkit.fluxcd.io -n flux-system
+NAME           AGE
+alertmanager   23s
+```
+
+Должны существовать объект `Alert`:
+```bash
 kubectl get alerts.notification.toolkit.fluxcd.io -n flux-system
+NAME                   AGE
+flux-to-alertmanager   29s
+
 ```
 
 Ожидаемые имена: `alertmanager` и `flux-to-alertmanager`. Детали и статус:
 
 ```bash
 kubectl -n flux-system get provider alertmanager -o yaml
+apiVersion: notification.toolkit.fluxcd.io/v1beta3
+kind: Provider
+metadata:
+  creationTimestamp: "2026-05-03T14:09:46Z"
+  finalizers:
+  - finalizers.fluxcd.io
+  generation: 1
+  labels:
+    kustomize.toolkit.fluxcd.io/name: flux-resources
+    kustomize.toolkit.fluxcd.io/namespace: flux-system
+  name: alertmanager
+  namespace: flux-system
+  resourceVersion: "52687"
+  uid: 311becb0-ea11-454f-859b-0f76585bbbc0
+spec:
+  address: http://vmalertmanager-vmks-victoria-metrics-k8s-stack.vmks.svc.cluster.local:9093/api/v2/alerts
+  type: alertmanager
+```
+
+```bash
 kubectl -n flux-system get alert flux-to-alertmanager -o yaml
+apiVersion: notification.toolkit.fluxcd.io/v1beta3
+kind: Alert
+metadata:
+  creationTimestamp: "2026-05-03T14:09:46Z"
+  generation: 1
+  labels:
+    kustomize.toolkit.fluxcd.io/name: flux-resources
+    kustomize.toolkit.fluxcd.io/namespace: flux-system
+  name: flux-to-alertmanager
+  namespace: flux-system
+  resourceVersion: "52685"
+  uid: c49e6233-63f0-499e-8293-db2be1838c5f
+spec:
+  eventSeverity: error
+  eventSources:
+  - kind: GitRepository
+    name: '*'
+  - kind: OCIRepository
+    name: '*'
+  - kind: HelmRepository
+    name: '*'
+  - kind: HelmChart
+    name: '*'
+  - kind: HelmRelease
+    name: '*'
+  - kind: Kustomization
+    name: '*'
+  providerRef:
+    name: alertmanager
 ```
 
 При необходимости проверьте, что объект попадает в сборку kustomize (локально из корня репозитория):
 
 ```bash
 kubectl kustomize apps/flux-resources | grep -E 'kind: (Provider|Alert)|name: (alertmanager|flux-to-alertmanager)'
+kind: Alert
+  name: flux-to-alertmanager
+    name: alertmanager
+kind: Provider
+  name: alertmanager
 ```
 
 #### Проверка, что CRD notification API установлены
@@ -503,6 +566,10 @@ CRD ставит дистрибутив Flux (оператор / `FluxInstance`)
 
 ```bash
 kubectl api-resources --api-group=notification.toolkit.fluxcd.io
+NAME        SHORTNAMES   APIVERSION                               NAMESPACED   KIND
+alerts                   notification.toolkit.fluxcd.io/v1beta3   true         Alert
+providers                notification.toolkit.fluxcd.io/v1beta3   true         Provider
+receivers                notification.toolkit.fluxcd.io/v1        true         Receiver
 ```
 
 Должны быть как минимум ресурсы вроде `providers`, `alerts`, `receivers` (точный набор зависит от версии Flux).
@@ -511,7 +578,14 @@ kubectl api-resources --api-group=notification.toolkit.fluxcd.io
 
 ```bash
 kubectl get crd providers.notification.toolkit.fluxcd.io
+NAME                                       CREATED AT
+providers.notification.toolkit.fluxcd.io   2026-05-03T12:05:20Z
+```
+
+```bash
 kubectl get crd alerts.notification.toolkit.fluxcd.io
+NAME                                    CREATED AT
+alerts.notification.toolkit.fluxcd.io   2026-05-03T12:05:19Z
 ```
 
 Если команды возвращают `NotFound`, контроллер уведомлений или установка Flux не завершена — смотрите `FluxInstance` и поды `notification-controller` в `flux-system`.
