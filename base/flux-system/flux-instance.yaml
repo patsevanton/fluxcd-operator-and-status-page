@@ -18,21 +18,28 @@ spec:
             path: /spec/template/spec/containers/0/args/5
             value: --feature-gates=ObjectLevelWorkloadIdentity=false,StatusMetrics=true
         target:
-          labelSelector: "app in (helm-controller,kustomize-controller)"
+          name: helm-controller
+          kind: Deployment
+      - patch: |
+          - op: replace
+            path: /spec/template/spec/containers/0/args/5
+            value: --feature-gates=ObjectLevelWorkloadIdentity=false,StatusMetrics=true
+        target:
+          name: kustomize-controller
           kind: Deployment
       - patch: |
           - op: replace
             path: /spec/template/spec/containers/0/args/7
             value: --feature-gates=ObjectLevelWorkloadIdentity=false,StatusMetrics=true
         target:
-          labelSelector: "app=source-controller"
+          name: source-controller
           kind: Deployment
       - patch: |
           - op: replace
             path: /spec/template/spec/containers/0/args/4
             value: --feature-gates=ObjectLevelWorkloadIdentity=false,StatusMetrics=true
         target:
-          labelSelector: "app=notification-controller"
+          name: notification-controller
           kind: Deployment
   components:
     - source-controller
