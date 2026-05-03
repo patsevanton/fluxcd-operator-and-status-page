@@ -52,6 +52,15 @@ spec:
       config:
         global:
           resolve_timeout: 1h
+        route:
+          group_by:
+            - alertname
+            - namespace
+            - kind
+            - name
+            - reason
+            - reportingcontroller
+            - severity
     grafana:
       ingress:
         ingressClassName: nginx

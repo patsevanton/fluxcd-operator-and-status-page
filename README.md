@@ -590,6 +590,30 @@ alerts.notification.toolkit.fluxcd.io   2026-05-03T12:05:19Z
 
 Если команды возвращают `NotFound`, контроллер уведомлений или установка Flux не завершена — смотрите `FluxInstance` и поды `notification-controller` в `flux-system`.
 
+#### Группировка алертов без revision
+
+По умолчанию Alertmanager группирует алерты по всем лейблам. Когда FluxCD отправляет событие `ReconciliationFailed` для одной и той же Kustomization на разных git-ревизиях, каждый коммит порождает отдельный алерт с уникальным лейблом `revision`. В Grafana это выглядит как N дублирующихся алертов на одну и ту же проблему.
+
+Чтобы схлопнуть такие алерты в один, в конфиге Alertmanager задан явный `group_by` без `revision` ([apps/victoria-metrics/helmrelease.yaml](apps/victoria-metrics/helmrelease.yaml)):
+
+```yaml
+alertmanager:
+  config:
+    route:
+      group_by:
+        - alertname
+        - namespace
+        - kind
+        - name
+        - reason
+        - reportingcontroller
+        - severity
+```
+
+Алерты с совпадающими значениями этих лейблов объединяются в одну группу. `revision` не входит в список, поэтому 4 алерта от `broken-demo` на разных коммитах отобразятся как один.
+
+**Компромисс:** в объединённом алерте видна только одна из ревизий. Если нужно отслеживать, на скольких конкретных коммитах воспроизводится проблема — верните `revision` в `group_by`.
+
 ### Метрики
 
 Создайте файл `apps/flux-resources/podmonitor.yaml` для сбора метрик:
