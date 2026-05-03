@@ -19,17 +19,22 @@
     "gitops-cluster-debug": {
       "source": "fluxcd/agent-skills",
       "sourceType": "github",
-      "computedHash": "df5af651e2834e8d98c0db1d46788dbaa06bf8c30845770106384b04f4d39622"
+      "computedHash": "d5b769071c32e0138f76ef1d2cc2e5a79e3048e021488c876bf82aaee1876023"
     },
     "gitops-knowledge": {
       "source": "fluxcd/agent-skills",
       "sourceType": "github",
-      "computedHash": "ad5e8695e51ed6aed833129734db668b5a863fdb6acd0689dd4a8b24e9984bbe"
+      "computedHash": "d50f8585f260cd80ff6ee8e056de2a41c7a62902ca0be7f7b9de4b9f20f85d0a"
     },
     "gitops-repo-audit": {
       "source": "fluxcd/agent-skills",
       "sourceType": "github",
-      "computedHash": "47259690c8a7b3ad1b150883220f95d55af9880d2feb45c0050597037a21d0ab"
+      "computedHash": "993332d18e70d52d438d0d44a8039427e7b44f2a43099e31efeeda788de26743"
+    },
+    "go-check": {
+      "source": "controlplaneio-fluxcd/flux-operator",
+      "sourceType": "github",
+      "computedHash": "407c8185597c99cb6ee29bb62ea3b530621496fb10ba26380fa56586326f173f"
     },
     "shell-check": {
       "source": "controlplaneio-fluxcd/flux-operator",
