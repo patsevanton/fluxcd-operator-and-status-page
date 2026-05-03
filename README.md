@@ -789,7 +789,7 @@ source-controller-7846484bbc-j88ww	http http-prom healthz
 
 [VictoriaMetrics K8s Stack](https://github.com/VictoriaMetrics/helm-charts/tree/master/charts/victoria-metrics-k8s-stack) поднимает **Grafana** вместе с vmagent, VMSingle и правилами алертинга.
 
-**Веб-доступ:** в этом репозитории для Grafana включён Ingress — [https://grafana.apatsev.org.ru](https://grafana.apatsev.org.ru) (см. [apps/victoria-metrics/helmrelease.yaml](apps/victoria-metrics/helmrelease.yaml)).
+**Веб-доступ:** в этом репозитории для Grafana включён Ingress — [http://grafana.apatsev.org.ru](http://grafana.apatsev.org.ru) (см. [apps/victoria-metrics/helmrelease.yaml](apps/victoria-metrics/helmrelease.yaml)).
 
 Пароль администратора Grafana:
 
