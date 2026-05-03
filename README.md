@@ -16,9 +16,9 @@
 
 | Путь | Роль |
 |------|------|
-| [base/apps.yaml](base/apps.yaml) | Flux `Kustomization`: **victoria-metrics**, **prometheus-crds** |
-| [base/flux-system/](base/flux-system/) | Классический bootstrap: `gotk-components.yaml`, [gotk-sync.yaml](base/flux-system/gotk-sync.yaml). После перехода на оператор каталог лучше оставить только для bootstrap и [flux-instance.yaml](base/flux-system/flux-instance.yaml) |
-| [apps/](apps/) | [apps/kustomization.yaml](apps/kustomization.yaml) — локальный `kustomize build apps/`. |
+| [base/apps.yaml](base/apps.yaml) | Flux `Kustomization`: **victoria-metrics**, **broken-demo**, **prometheus-crds** |
+| [base/flux-system/](base/flux-system/) | Классический bootstrap: `gotk-components.yaml`, `gotk-sync.yaml` (создаётся командой `flux bootstrap`). После перехода на оператор каталог содержит только [flux-instance.yaml](base/flux-system/flux-instance.yaml) |
+| [apps/](apps/) | Приложения: `apps/victoria-metrics/`, `apps/broken-demo/`, `apps/prometheus-crds/` (каждое со своим `kustomization.yaml` и манифестами). Каталог `apps/flux-operator/` и `apps/flux-resources/` создаются позже (Часть 2) |
 
 **Нюанс раскладки:** при первом `flux bootstrap` CLI по умолчанию кладёт `flux-system/` в корень репозитория. Содержимое `base/` и `apps/` вы коммитите в Git до или после bootstrap — главное, чтобы путь в bootstrap совпадал с тем, что ожидает кластер.
 
@@ -115,7 +115,7 @@ flux-system	victoria-metrics	main@sha1:71ce4ad3	False    	True 	Applied revision
 
 ### Установка Flux Operator
 
-Для установке Flux Operator выполните шаги ниже вручную из корня репозитория.
+Для установки Flux Operator выполните шаги ниже вручную из корня репозитория.
 
 Создайте файлы из корня репозитория:
 
@@ -209,7 +209,7 @@ flux-operator           	0.47.0  	False    	True 	Helm install succeeded for rel
 
 ### Создание FluxInstance
 
-После установки установки Flux Operator `base/flux-system/kustomization.yaml` продолжает ссылаться на `gotk-components.yaml` и `gotk-sync.yaml`, поэтому Flux всё ещё управляется классическим bootstrap.
+После установки Flux Operator `base/flux-system/kustomization.yaml` продолжает ссылаться на `gotk-components.yaml` и `gotk-sync.yaml`, поэтому Flux всё ещё управляется классическим bootstrap.
 
 Лучше всего перейти на `FluxInstance`. FluxInstance описывает для оператора, какую версию Flux развернуть, какие контроллеры включить и с какого Git-репозитория синхронизировать манифесты. После установки оператора это шаг, который фактически поднимает Flux в кластере и привязывает его к вашему GitOps.
 
@@ -535,7 +535,7 @@ kubectl kustomize apps/flux-resources | grep -E 'kind: (Provider|Alert)|name: (a
 
 #### Проверка, что CRD notification API установлены
 
-CRD ставит дистрибутив Flux (оператор / `FluxInstance`), а не сам файл `base/flux-resources/flux-notifications.yaml`. Убедитесь, что в кластере есть группа `notification.toolkit.fluxcd.io`:
+CRD ставит дистрибутив Flux (оператор / `FluxInstance`), а не сам файл `apps/flux-resources/flux-notifications.yaml`. Убедитесь, что в кластере есть группа `notification.toolkit.fluxcd.io`:
 
 ```bash
 kubectl api-resources --api-group=notification.toolkit.fluxcd.io
