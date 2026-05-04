@@ -791,11 +791,6 @@ kubectl get secret vmks-grafana -n vmks -o jsonpath='{.data.admin-password}' | b
 
 Исходные дашборды взяты из официального репозитория [flux2-monitoring-example](https://github.com/fluxcd/flux2-monitoring-example/tree/main/monitoring/configs/dashboards) и [Grafana Dashboard ID 16714 (Flux2)](https://grafana.com/grafana/dashboards/16714-flux2/), адаптированы и переработаны для корректной работы с Flux 2.8+ и текущим стеком наблюдаемости.
 
-Готовые JSON-дашборды из этого репозитория можно добавить в Grafana двумя способами:
-
-- Через UI Grafana: **Dashboards → Import** и импорт JSON из директории `dashboard/` этого репозитория.
-- Через прямую загрузку JSON по ссылкам ниже.
-
 Если метрики Flux уже собираются (через `PodMonitor`), дашборды начнут показывать данные сразу после импорта.
 
 | Дашборд | Описание | JSON |
