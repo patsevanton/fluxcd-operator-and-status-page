@@ -12,19 +12,6 @@
 
 Здесь зафиксирован путь от классического bootstrap к **[Flux Operator](https://fluxoperator.dev/)** (**FluxInstance**) и **FluxCD Status Page**.
 
-## Как устроен репозиторий
-
-В таблице ниже — текущая структура репозитория **после** завершённой миграции на Flux Operator.
-
-| Путь | Роль |
-|------|------|
-| [base/apps.yaml](base/apps.yaml) | Flux `Kustomization`: **victoria-metrics**, **broken-demo**, **prometheus-crds**, **flux-operator**, **flux-resources** |
-| [base/flux-system/](base/flux-system/) | Каталог Flux-системы. До миграции содержал `gotk-components.yaml` и `gotk-sync.yaml` (создаётся `flux bootstrap`). После миграции — только [flux-instance.yaml](base/flux-system/flux-instance.yaml) и `kustomization.yaml` |
-| [apps/](apps/) | Приложения: `apps/victoria-metrics/`, `apps/broken-demo/`, `apps/prometheus-crds/`, `apps/flux-operator/`, `apps/flux-resources/` (каждое со своим `kustomization.yaml` и манифестами) |
-
-**Нюанс раскладки:** при первом `flux bootstrap` CLI по умолчанию кладёт `flux-system/` в корень репозитория. Содержимое `base/` и `apps/` вы коммитите в Git до или после bootstrap — главное, чтобы путь в bootstrap (`--path=base`) совпадал с тем, что ожидает кластер.
-
-
 ## Часть 1. Классический Flux: bootstrap и приложения
 
 ### Предварительные условия
