@@ -777,7 +777,7 @@ notification-controller-6d66bb7797-2rm5f   1/1     Running   0          118m   1
 source-controller-7846484bbc-j88ww         1/1     Running   0          118m   10.112.129.12   cl1lo7src0ijsb1bv4i6-oban   <none>           <none>
 ```
 
-Проверить, что контроллеры暴露ируют порт `http-prom`:
+Проверить, что контроллеры экспонируют порт `http-prom`:
 
 ```bash
 kubectl get pods -n flux-system -l app=source-controller -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{range .spec.containers[*].ports[*]}{.name}{" "}{end}{"\n"}{end}'
@@ -795,7 +795,7 @@ source-controller-7846484bbc-j88ww	http http-prom healthz
 | `GitRepository` / `Kustomization` не Ready | `flux get sources git -A`, `kubectl describe gitrepository -n flux-system`, сеть и права PAT / deploy key |
 | HelmRelease завис | `flux get helmreleases -A`, логи `helm-controller`, значения в `HelmRelease` |
 | После миграции не применяется `base/` | В `FluxInstance.spec.sync.path` должно быть `./base`, если манифесты лежат под `base/` |
-| Нет метрик Flux-контроллеров | Проверьте, что поды暴露ируют порт `http-prom`; PodMonitor должен быть в `flux-system` и указывать на этот порт |
+| Нет метрик Flux-контроллеров | Проверьте, что поды экспонируют порт `http-prom`; PodMonitor должен быть в `flux-system` и указывать на этот порт |
 | Status Page не открывается | Проверьте Ingress и `web.enabled: true` / `web.config.baseURL` в values HelmRelease оператора |
 
 
