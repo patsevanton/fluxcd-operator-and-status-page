@@ -596,20 +596,6 @@ kind: Provider
   name: alertmanager
 ```
 
-#### Проверка, что CRD notification API установлены
-
-CRD ставит дистрибутив Flux (оператор / `FluxInstance`), а не сам файл `apps/flux-resources/flux-notifications.yaml`. Убедитесь, что в кластере есть группа `notification.toolkit.fluxcd.io`:
-
-```bash
-kubectl api-resources --api-group=notification.toolkit.fluxcd.io
-NAME        SHORTNAMES   APIVERSION                               NAMESPACED   KIND
-alerts                   notification.toolkit.fluxcd.io/v1beta3   true         Alert
-providers                notification.toolkit.fluxcd.io/v1beta3   true         Provider
-receivers                notification.toolkit.fluxcd.io/v1        true         Receiver
-```
-
-Если команда возвращает пустой список, контроллер уведомлений или установка Flux не завершена — смотрите `FluxInstance` �� поды `notification-controller` в `flux-system`.
-
 #### Группировка алертов без revision
 
 По умолчанию Alertmanager группирует алерты по всем лейблам. Когда FluxCD отправляет событие `ReconciliationFailed` для одной и той же Kustomization на разных git-ревизиях, каждый коммит порождает отдельный алерт с уникальным лейблом `revision`. В Grafana это выглядит как N дублирующихся алертов на одну и ту же проблему.
@@ -718,13 +704,6 @@ LAST SEEN   TYPE     REASON                    OBJECT                         ME
 38s         Normal   Progressing               kustomization/flux-resources   PodMonitor/flux-system/flux-system created
 38s         Normal   Progressing               kustomization/flux-resources   Health check passed in 100.046212ms
 37s         Normal   ReconciliationSucceeded   kustomization/flux-resources   Reconciliation finished in 334.747203ms, next run in 10m0s
-```
-
-Проверить, что CRD **PodMonitor** (Prometheus Operator / совместимый стек) установлен:
-
-```bash
-kubectl api-resources --api-group=monitoring.coreos.com | grep -i podmonitor
-podmonitors           pmon         monitoring.coreos.com/v1         true         PodMonitor
 ```
 
 Проверить объект PodMonitor в кластере. Ресурс должен быть в namespace `flux-system` — без `metadata.namespace` Flux при применении выдаст ошибку `PodMonitor/... namespace not specified`:
