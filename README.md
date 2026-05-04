@@ -598,30 +598,6 @@ kind: Provider
   name: alertmanager
 ```
 
-#### Группировка алертов без revision
-
-По умолчанию Alertmanager группирует алерты по всем лейблам. Когда FluxCD отправляет событие `ReconciliationFailed` для одной и той же Kustomization на разных git-ревизиях, каждый коммит порождает отдельный алерт с уникальным лейблом `revision`. В Grafana это выглядит как N дублирующихся алертов на одну и ту же проблему.
-
-Чтобы схлопнуть такие алерты в один, в конфиге Alertmanager задан явный `group_by` без `revision` ([apps/victoria-metrics/helmrelease.yaml](apps/victoria-metrics/helmrelease.yaml)):
-
-```yaml
-alertmanager:
-  config:
-    route:
-      group_by:
-        - alertname
-        - namespace
-        - kind
-        - name
-        - reason
-        - reportingcontroller
-        - severity
-```
-
-Алерты с совпадающими значениями этих лейблов объединяются в одну группу. `revision` не входит в список, поэтому 4 алерта от `broken-demo` на разных коммитах отобразятся как один.
-
-**Компромисс:** в объединённом алерте видна только одна из ревизий. Если нужно отслеживать, на скольких конкретных коммитах воспроизводится проблема — верните `revision` в `group_by`.
-
 ### Метрики
 
 Контроллеры Flux экспонируют Prometheus-совместимые метрики на порту `http-prom` — счётчики и гистограммы реконсиляций, задержек обработки артефактов, очередей и ошибок. Без сбора этих метрик невозможно:
@@ -862,8 +838,6 @@ JSON: [`dashboard/control-plane.json`](https://github.com/patsevanton/fluxcd-ope
 
 ![Grafana — Alertmanager](screenshots/Dashboard_alertmanager.png)
 
-Каждый новый коммит, который приходит в Flux через `GitRepository`, запускает реконсиляцию привязанных `Kustomization` и `HelmRelease`. Если реконсиляция завершается ошибкой (`ReconciliationFailed`), notification-controller отправляет алерт в Alertmanager с лейблом `revision` — SHA коммита, на котором произошёл сбой. Таким образом, в Alertmanager и Grafana для каждого «плохого» коммита появляется отдельный алерт, и вы сразу видите, какая ревизия привела к сбою.
+Каждый новый коммит, который приходит в Flux через `GitRepository`, запускает реконсиляцию привязанных `Kustomization` и `HelmRelease`. Если реконсиляция завершается ошибкой (`ReconciliationFailed`), notification-controller отправляет алерт в Alertmanager. Таким образом, в Alertmanager и Grafana вы сразу видите, какой ресурс привёл к сбою.
 
-Чтобы увидеть алерт в Grafana, откройте дашборд Alertmanager и отфильтруйте по `alertname=ReconciliationFailed` — в лейблах каждого алерта будет поле `revision` с указанием конкретного коммита.
-
-> **Примечание:** в конфигурации Alertmanager ([apps/victoria-metrics/helmrelease.yaml](apps/victoria-metrics/helmrelease.yaml)) `revision` не входит в `group_by`, поэтому алерты с разных коммитов на одну и ту же проблему схлопываются в одну группу. Если вам нужен отдельный алерт на каждый коммит, добавьте `revision` в список `group_by`.
+Чтобы увидеть алерт в Grafana, откройте дашборд Alertmanager и отфильтруйте по `alertname=ReconciliationFailed`.

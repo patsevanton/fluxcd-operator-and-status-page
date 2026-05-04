@@ -52,15 +52,6 @@ spec:
       config:
         global:
           resolve_timeout: 1h
-        route:
-          group_by:
-            - alertname
-            - namespace
-            - kind
-            - name
-            - reason
-            - reportingcontroller
-            - severity
     # Настройка kube-state-metrics для экспорта метрики gotk_resource_info,
     # без которой дашборд Flux Cluster Stats показывает "No data".
     kube-state-metrics:
