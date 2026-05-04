@@ -608,23 +608,7 @@ providers                notification.toolkit.fluxcd.io/v1beta3   true         P
 receivers                notification.toolkit.fluxcd.io/v1        true         Receiver
 ```
 
-Явная проверка CRD для `Provider`:
-
-```bash
-kubectl get crd providers.notification.toolkit.fluxcd.io
-NAME                                       CREATED AT
-providers.notification.toolkit.fluxcd.io   2026-05-03T12:05:20Z
-```
-
-Явная проверка CRD для `Alert`:
-
-```bash
-kubectl get crd alerts.notification.toolkit.fluxcd.io
-NAME                                    CREATED AT
-alerts.notification.toolkit.fluxcd.io   2026-05-03T12:05:19Z
-```
-
-Если команды возвращают `NotFound`, контроллер уведомлений или установка Flux не завершена — смотрите `FluxInstance` и поды `notification-controller` в `flux-system`.
+Если команда возвращает пустой список, контроллер уведомлений или установка Flux не завершена — смотрите `FluxInstance` �� поды `notification-controller` в `flux-system`.
 
 #### Группировка алертов без revision
 
@@ -737,12 +721,6 @@ LAST SEEN   TYPE     REASON                    OBJECT                         ME
 ```
 
 Проверить, что CRD **PodMonitor** (Prometheus Operator / совместимый стек) установлен:
-
-```bash
-kubectl get crd podmonitors.monitoring.coreos.com
-NAME                                CREATED AT
-podmonitors.monitoring.coreos.com   2026-05-03T12:05:56Z
-```
 
 ```bash
 kubectl api-resources --api-group=monitoring.coreos.com | grep -i podmonitor
