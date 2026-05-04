@@ -1,6 +1,6 @@
 # От Flux CLI к Flux Operator и Status Page: один репозиторий — полный путь
 
-Когда вы впервые поднимаете GitOps в Kubernetes, **Flux CD** кажется достаточным: `flux bootstrap`, манифесты в Git, контроллеры тянут состояние кластера. 
+Когда вы впервые поднимаете GitOps в Kubernetes, **Flux CD** кажется достаточным: `flux bootstrap`, манифесты в Git, контроллеры тянут состояние кластера.
 
 Но лучше перейти на Flux Operator:
 
@@ -12,15 +12,17 @@
 
 Здесь зафиксирован путь от классического bootstrap к **[Flux Operator](https://fluxoperator.dev/)** (**FluxInstance**) и **FluxCD Status Page**.
 
-## Как устроен репозиторий FluxCD до установки FluxCD operator
+## Как устроен репозиторий
+
+В таблице ниже — текущая структура репозитория **после** завершённой миграции на Flux Operator.
 
 | Путь | Роль |
 |------|------|
-| [base/apps.yaml](base/apps.yaml) | Flux `Kustomization`: **victoria-metrics**, **broken-demo**, **prometheus-crds** |
-| [base/flux-system/](base/flux-system/) | Классический bootstrap: `gotk-components.yaml`, `gotk-sync.yaml` (создаётся командой `flux bootstrap`). После перехода на оператор каталог содержит только [flux-instance.yaml](base/flux-system/flux-instance.yaml) |
-| [apps/](apps/) | Приложения: `apps/victoria-metrics/`, `apps/broken-demo/`, `apps/prometheus-crds/` (каждое со своим `kustomization.yaml` и манифестами). Каталог `apps/flux-operator/` и `apps/flux-resources/` создаются позже (Часть 2) |
+| [base/apps.yaml](base/apps.yaml) | Flux `Kustomization`: **victoria-metrics**, **broken-demo**, **prometheus-crds**, **flux-operator**, **flux-resources** |
+| [base/flux-system/](base/flux-system/) | Каталог Flux-системы. До миграции содержал `gotk-components.yaml` и `gotk-sync.yaml` (создаётся `flux bootstrap`). После миграции — только [flux-instance.yaml](base/flux-system/flux-instance.yaml) и `kustomization.yaml` |
+| [apps/](apps/) | Приложения: `apps/victoria-metrics/`, `apps/broken-demo/`, `apps/prometheus-crds/`, `apps/flux-operator/`, `apps/flux-resources/` (каждое со своим `kustomization.yaml` и манифестами) |
 
-**Нюанс раскладки:** при первом `flux bootstrap` CLI по умолчанию кладёт `flux-system/` в корень репозитория. Содержимое `base/` и `apps/` вы коммитите в Git до или после bootstrap — главное, чтобы путь в bootstrap совпадал с тем, что ожидает кластер.
+**Нюанс раскладки:** при первом `flux bootstrap` CLI по умолчанию кладёт `flux-system/` в корень репозитория. Содержимое `base/` и `apps/` вы коммитите в Git до или после bootstrap — главное, чтобы путь в bootstrap (`--path=base`) совпадал с тем, что ожидает кластер.
 
 
 ## Часть 1. Классический Flux: bootstrap и приложения
@@ -45,6 +47,8 @@
 
 ### Команда bootstrap
 
+Запустите bootstrap из любой машины с установленным Flux CLI и доступом к кластеру. Команда создаст в репозитории директорию `base/flux-system/` с манифестами контроллеров (`gotk-components.yaml`) и синхронизации (`gotk-sync.yaml`), а также закоммитит их в ветку `main`.
+
 ```bash
 flux bootstrap github \
   --token-auth \
@@ -65,7 +69,7 @@ Please enter your GitHub personal access token (PAT):
 ✔ all components are healthy
 ```
 
-flux bootstrap создаст директорию base/flux-system с base/flux-system/gotk-components.yaml и base/flux-system/gotk-sync.yaml. Скачайте изменения из Git-репозитория:
+После bootstrap обновите локальную копию репозитория, чтобы подтянуть созданные файлы:
 
 ```bash
 git pull
@@ -73,11 +77,15 @@ git pull
 
 ### Проверка после bootstrap
 
-Flux уже синхронизирует ваши приложения. `flux get all -A` показывает состояние всех ресурсов FluxCD.
+Flux уже синхронизирует ваши приложения. Показать состояние всех ресурсов FluxCD:
 
-Команда ниже показывает состояние всех ресурсов FluxCD на которые стоит обратить внимание.
-Видно что broken-demo сломан. broken-demo нужен для тестирования алертов FluxCD.
+```bash
+flux get all -A
 ```
+
+Команда ниже фильтрует вывод, оставляя только ресурсы с проблемами. Видно, что `broken-demo` сломан — он нужен для тестирования алертов FluxCD:
+
+```bash
 flux get all -A | grep -v "succeeded" | grep -v Applied | grep -v pulled | grep -v "stored artifact" | grep -v Ready
 NAMESPACE  	NAME                     	REVISION          	SUSPENDED	READY	MESSAGE                                           
 
@@ -89,23 +97,25 @@ NAMESPACE  	NAME                                	REVISION	SUSPENDED	READY	MESSAG
 
 NAMESPACE  	NAME                          	REVISION          	SUSPENDED	READY	MESSAGE                                                                                                                                                                                                                                                                                                                                                                                                                 
 flux-system	kustomization/broken-demo     	                  	False    	False	HelmRelease/broken-demo/broken-demo dry-run failed (Invalid): HelmRelease.helm.toolkit.fluxcd.io "broken-demo" is invalid: [spec.chart.spec.sourceRef.kind: Unsupported value: "OCIRepository": supported values: "HelmRepository", "GitRepository", "Bucket", <nil>: Invalid value: "null": some validation rules were not checked because the object was invalid; correct the existing errors to complete validation]	
-           	                              	                  	         	     	Namespace/broken-demo created                      
+          	                              	                  	         	     	Namespace/broken-demo created                      
 ```
 
-Можно проверить helmreleases kustomizations отдельно.
+Проверить HelmReleases отдельно:
 
-```
+```bash
 flux get helmreleases -n flux-system
 NAME                    	REVISION	SUSPENDED	READY	MESSAGE                                                                                                               
 prometheus-operator-crds	28.0.1  	False    	True 	Helm install succeeded for release flux-system/prometheus-operator-crds.v1 with chart prometheus-operator-crds@28.0.1
 vmks                    	0.74.1  	False    	True 	Helm upgrade succeeded for release vmks/vmks.v2 with chart victoria-metrics-k8s-stack@0.74.1  
 ```
 
+Проверить Kustomization'ы:
+
 ```bash
 flux get kustomizations -A
 NAMESPACE  	NAME            	REVISION          	SUSPENDED	READY	MESSAGE                                                                                                                                       
 flux-system	broken-demo     	                  	False    	False	HelmRelease/broken-demo/broken-demo dry-run failed (Invalid): HelmRelease.helm.toolkit.fluxcd.io "broken-demo" is invalid: [spec.chart.spec.sourceRef.kind: Unsupported value: "OCIRepository": supported values: "HelmRepository", "GitRepository", "Bucket", <nil>: Invalid value: "null": some validation rules were not checked because the object was invalid; correct the existing errors to complete validation]	
-                                                                          	
+                                                                           	
 flux-system	flux-system     	main@sha1:05119ed0	False    	True 	Applied revision: main@sha1:05119ed0                                                                                                               
 
 flux-system	prometheus-crds 	main@sha1:05119ed0	False    	True 	Applied revision: main@sha1:05119ed0                                                                                                               
@@ -119,11 +129,15 @@ flux-system	victoria-metrics	main@sha1:05119ed0	False    	True 	Applied revision
 
 Для установки Flux Operator выполните шаги ниже вручную из корня репозитория.
 
-Создайте файлы из корня репозитория:
+Создайте директорию для манифестов оператора:
 
 ```bash
 mkdir -p apps/flux-operator
+```
 
+Добавьте Kustomization для `flux-operator` в конец файла `base/apps.yaml` (существующие записи `victoria-metrics`, `broken-demo`, `prometheus-crds` останутся на месте):
+
+```bash
 cat <<'EOF' >> base/apps.yaml
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
@@ -142,7 +156,11 @@ spec:
   wait: true
   timeout: 10m
 EOF
+```
 
+Создайте HelmRepository для OCI-чарта ControlPlane:
+
+```bash
 cat <<'EOF' > apps/flux-operator/sources.yaml
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
@@ -154,7 +172,11 @@ spec:
   type: oci
   url: oci://ghcr.io/controlplaneio-fluxcd/charts
 EOF
+```
 
+Создайте HelmRelease оператора. Обратите внимание на секцию `web` — она включает Status Page и настраивает Ingress:
+
+```bash
 cat <<'EOF' > apps/flux-operator/helmrelease.yaml
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
@@ -190,7 +212,7 @@ spec:
 EOF
 ```
 
-Закоммитьте изменения
+Закоммитьте изменения и отправьте в удалённый репозиторий:
 
 ```bash
 git add .
@@ -198,11 +220,14 @@ git commit -m "Add flux-operator manifests"
 git push
 ```
 
-Дождитесь синхронизации:
+Дождитесь, пока Flux синхронизирует новую Kustomization и установит оператор:
+
 ```bash
 flux get kustomizations -n flux-system | grep flux-operator
 flux-operator   	main@sha1:e23386ea	False    	True 	Applied revision: main@sha1:e23386ea
 ```
+
+Проверить, что HelmRelease оператора установлен:
 
 ```bash
 flux get helmreleases -n flux-system | grep flux-operator
@@ -211,11 +236,13 @@ flux-operator           	0.47.0  	False    	True 	Helm install succeeded for rel
 
 ### Создание FluxInstance
 
-После установки Flux Operator `base/flux-system/kustomization.yaml` продолжает ссылаться на `gotk-components.yaml` и `gotk-sync.yaml`, поэтому Flux всё ещё управляется классическим bootstrap.
+После установки Flux Operator файл `base/flux-system/kustomization.yaml` (созданный `flux bootstrap`) продолжает ссылаться на `gotk-components.yaml` и `gotk-sync.yaml`, поэтому Flux всё ещё управляется классическим bootstrap.
 
-Лучше всего перейти на `FluxInstance`. FluxInstance описывает для оператора, какую версию Flux развернуть, какие контроллеры включить и с какого Git-репозитория синхронизировать манифесты. После установки оператора это шаг, который фактически поднимает Flux в кластере и привязывает его к вашему GitOps.
+Чтобы перейти на управление через оператор, создайте `FluxInstance`. Этот ресурс описывает оператору, какую версию Flux развернуть, какие контроллеры включить и с какого Git-репозитория синхронизировать манифесты.
 
-Важно про источник управления Flux на этапах миграции:
+**Важно понимать порядок переключения:** сначала создаётся `FluxInstance`, оператор берёт управление Flux на себя, ורק затем удаляются старые файлы bootstrap. Попытка удалить `gotk-*` до создания `FluxInstance` приведёт к потере управления кластером.
+
+Создайте файл FluxInstance:
 
 ```bash
 mkdir -p base/flux-system
@@ -241,19 +268,27 @@ spec:
     ref: "refs/heads/main"
     path: "./base"
 EOF
+```
 
+Примените FluxInstance напрямую через kubectl, чтобы оператор сразу начал управлять Flux:
+
+```bash
 kubectl apply -f base/flux-system/flux-instance.yaml
 ```
 
-После создания и применения `base/flux-system/flux-instance.yaml` ресурс `FluxInstance` уже начинает управлять жизненным циклом Flux.
+После применения `FluxInstance` оператор начинает управлять жизненным циклом Flux: создаёт контроллеры, настраивает синхронизацию и выпускает `FluxReport`.
 
 ### Проверка миграции
+
+Проверить статус FluxInstance:
 
 ```bash
 kubectl -n flux-system get fluxinstance flux
 NAME   AGE     READY   STATUS                           REVISION
 flux   2m21s   True    Reconciliation finished in 19s   v2.8.5@sha256:df269637e1cbd79f25263d77f754ec782afb780ad197f4732771f661ceb73f3f
 ```
+
+Убедиться, что контроллеры запущены (включая оператор):
 
 ```bash
 kubectl -n flux-system get pods
@@ -267,18 +302,18 @@ source-controller-7846484bbc-6rfg5         1/1     Running   0          2m19s
 
 ### Очистка репозитория после миграции
 
-Полный переход в Git фиксируется после очистки `gotk-*` и обновления `base/flux-system/kustomization.yaml` на `flux-instance.yaml`.
-
-Удалите артефакты классического bootstrap и переключите `base/flux-system/kustomization.yaml` на один ресурс — `flux-instance.yaml`.
+Полный переход на Flux Operator фиксируется удалением файлов классического bootstrap и обновлением `base/flux-system/kustomization.yaml` так, чтобы он ссылался только на `flux-instance.yaml`.
 
 Подробнее: [Flux Bootstrap Migration](https://fluxcd.control-plane.io/operator/flux-bootstrap-migration).
+
+Удалите артефакты классического bootstrap:
 
 ```bash
 rm base/flux-system/gotk-components.yaml
 rm base/flux-system/gotk-sync.yaml
 ```
 
-Пересоздайте `base/flux-system/kustomization.yaml`:
+Пересоздайте `base/flux-system/kustomization.yaml`, чтобы он включал только `flux-instance.yaml`:
 
 ```bash
 cat <<'EOF' > base/flux-system/kustomization.yaml
@@ -289,13 +324,13 @@ resources:
 EOF
 ```
 
+Добавьте все изменения в индекс:
+
 ```bash
 git add .
 ```
 
-Пользовательские ресурсы (`flux-notifications.yaml` и `podmonitor.yaml`) создаются ниже в соответствующих разделах.
-
-Закоммитьте изменения.
+Закоммитьте и отправьте в удалённый репозиторий:
 
 ```bash
 git commit -m "Moved Flux resources"
@@ -303,7 +338,7 @@ git push
 ```
 
 
-## FluxCD Status Page
+## Часть 3. FluxCD Status Page
 
 После установки Flux Operator в игру входят **FluxReport**, события по `FluxInstance` и метрики Prometheus.
 
@@ -340,6 +375,12 @@ git push
 Ресурс `FluxReport` `flux` в `flux-system` (обновление по умолчанию раз в 5 минут):
 
 ```bash
+kubectl -n flux-system get fluxreport flux -o yaml
+```
+
+Пример вывода (фрагмент):
+
+```yaml
 apiVersion: fluxcd.controlplane.io/v1
 kind: FluxReport
 metadata:
@@ -366,8 +407,10 @@ spec:
 
 ### События
 
+Посмотреть события, связанные с FluxInstance:
+
 ```bash
-kubectl -n flux-system events --for fluxinstance/flux
+kubectl -n flux-system get events --for fluxinstance/flux
 LAST SEEN   TYPE     REASON                    OBJECT              MESSAGE
 43m         Normal   ReconciliationSucceeded   FluxInstance/flux   Reconciliation finished in 2s
 ```
@@ -376,11 +419,15 @@ LAST SEEN   TYPE     REASON                    OBJECT              MESSAGE
 
 ### Уведомления Flux в Alertmanager
 
-Создайте файл `apps/flux-resources/flux-notifications.yaml`:
+Создайте директорию для ресурсов Flux:
 
 ```bash
 mkdir -p apps/flux-resources
+```
 
+Создайте файл с Provider и Alert для пересылки событий Flux в Alertmanager:
+
+```bash
 cat <<'EOF' > apps/flux-resources/flux-notifications.yaml
 # Flux notification-controller → Prometheus Alertmanager (VMAlertmanager из victoria-metrics-k8s-stack).
 # События с severity error попадают в Alertmanager; Grafana их видит через datasource Alertmanager.
@@ -420,7 +467,7 @@ spec:
 EOF
 ```
 
-Создайте для ресурсов Flux Kustomization в `base/apps.yaml`:
+Добавьте Kustomization для `flux-resources` в `base/apps.yaml`:
 
 ```bash
 cat <<'EOF' >> base/apps.yaml
@@ -443,7 +490,7 @@ spec:
 EOF
 ```
 
-Для явного указания ресурсов, создайте файл `apps/flux-resources/kustomization.yaml`:
+Создайте `kustomization.yaml` для явного перечисления ресурсов в директории:
 
 ```bash
 cat <<'EOF' > apps/flux-resources/kustomization.yaml
@@ -477,7 +524,7 @@ git push
 flux get kustomizations -n flux-system flux-system
 ```
 
-Должны существовать объект `Provider`:
+Проверить, что объект `Provider` создан:
 
 ```bash
 kubectl get providers.notification.toolkit.fluxcd.io -n flux-system
@@ -485,15 +532,15 @@ NAME           AGE
 alertmanager   23s
 ```
 
-Должны существовать объект `Alert`:
+Проверить, что объект `Alert` создан:
+
 ```bash
 kubectl get alerts.notification.toolkit.fluxcd.io -n flux-system
 NAME                   AGE
 flux-to-alertmanager   29s
-
 ```
 
-Ожидаемые имена: `alertmanager` и `flux-to-alertmanager`. Детали и статус:
+Детали и статус объекта `Provider`:
 
 ```bash
 kubectl -n flux-system get provider alertmanager -o yaml
@@ -515,6 +562,8 @@ spec:
   address: http://vmalertmanager-vmks-victoria-metrics-k8s-stack.vmks.svc.cluster.local:9093/api/v2/alerts
   type: alertmanager
 ```
+
+Детали и статус объекта `Alert`:
 
 ```bash
 kubectl -n flux-system get alert flux-to-alertmanager -o yaml
@@ -549,7 +598,7 @@ spec:
     name: alertmanager
 ```
 
-При необходимости проверьте, что объект попадает в сборку kustomize (локально из корня репозитория):
+Локально проверить, что объекты попадают в сборку kustomize:
 
 ```bash
 kubectl kustomize apps/flux-resources | grep -E 'kind: (Provider|Alert)|name: (alertmanager|flux-to-alertmanager)'
@@ -572,15 +621,15 @@ providers                notification.toolkit.fluxcd.io/v1beta3   true         P
 receivers                notification.toolkit.fluxcd.io/v1        true         Receiver
 ```
 
-Должны быть как минимум ресурсы вроде `providers`, `alerts`, `receivers` (точный набор зависит от версии Flux).
-
-Явная проверка CRD для `Provider` и `Alert`:
+Явная проверка CRD для `Provider`:
 
 ```bash
 kubectl get crd providers.notification.toolkit.fluxcd.io
 NAME                                       CREATED AT
 providers.notification.toolkit.fluxcd.io   2026-05-03T12:05:20Z
 ```
+
+Явная проверка CRD для `Alert`:
 
 ```bash
 kubectl get crd alerts.notification.toolkit.fluxcd.io
@@ -616,7 +665,7 @@ alertmanager:
 
 ### Метрики
 
-Создайте файл `apps/flux-resources/podmonitor.yaml` для сбора метрик:
+Создайте PodMonitor для сбора метрик со всех Flux-контроллеров:
 
 ```bash
 cat <<'EOF' > apps/flux-resources/podmonitor.yaml
@@ -648,7 +697,7 @@ spec:
 EOF
 ```
 
-Обновите `apps/flux-resources/kustomization.yaml`, чтобы подключить оба пользовательских ресурса:
+Обновите `apps/flux-resources/kustomization.yaml`, чтобы подключить оба ресурса:
 
 ```bash
 cat <<'EOF' > apps/flux-resources/kustomization.yaml
@@ -660,7 +709,7 @@ resources:
 EOF
 ```
 
-Зафиксируйте изменения и отправьте их в удалённый репозиторий:
+Закоммитьте изменения и отправьте в удалённый репозиторий:
 
 ```bash
 git add .
@@ -670,7 +719,7 @@ git push
 
 #### Проверка PodMonitor и метрик
 
-Убедитесь, что `Kustomization` **flux-resources** подтянула ревизию с `podmonitor.yaml`:
+Убедитесь, что Kustomization `flux-resources` подтянула ревизию с `podmonitor.yaml`:
 
 ```bash
 flux get kustomizations -n flux-system flux-resources
@@ -678,21 +727,10 @@ NAME          	REVISION                     	SUSPENDED	READY	MESSAGE
 flux-resources	refs/heads/main@sha1:429293c9	False    	True 	Applied revision: refs/heads/main@sha1:429293c9	
 ```
 
-При необходимости детали и события (в стандартном `flux` нет подкоманды `describe`):
+Посмотреть события Kustomization (в стандартном `flux` нет подкоманды `describe`):
 
 ```bash
-kubectl describe kustomization flux-resources -n flux-system | grep ReconciliationSucceeded
-    Reason:                ReconciliationSucceeded
-    Last Reconciled Status:    ReconciliationSucceeded
-    Last Reconciled Status:    ReconciliationSucceeded
-  Normal  ReconciliationSucceeded  5m26s  kustomize-controller  Reconciliation finished in 204.558291ms, next run in 10m0s
-  Normal  ReconciliationSucceeded  81s    kustomize-controller  Reconciliation finished in 241.056785ms, next run in 10m0s
-  Normal  ReconciliationSucceeded  17s    kustomize-controller  Reconciliation finished in 334.747203ms, next run in 10m0s
-```
-
-
-```bash
-kubectl get events -n flux-system --field-selector involvedObject.name=flux-resources --sort-by='.lastTimestamp' | tail -n 20
+kubectl get events -n flux-system --field-selector involvedObject.name=flux-resources --sort-by='.lastTimestamp'
 LAST SEEN   TYPE     REASON                    OBJECT                         MESSAGE
 5m46s       Normal   Progressing               kustomization/flux-resources   Alert/flux-system/flux-to-alertmanager created...
 5m46s       Normal   Progressing               kustomization/flux-resources   Health check passed in 32.876003ms
@@ -703,7 +741,7 @@ LAST SEEN   TYPE     REASON                    OBJECT                         ME
 37s         Normal   ReconciliationSucceeded   kustomization/flux-resources   Reconciliation finished in 334.747203ms, next run in 10m0s
 ```
 
-CRD **PodMonitor** (Prometheus Operator / совместимый стек):
+Проверить, что CRD **PodMonitor** (Prometheus Operator / совместимый стек) установлен:
 
 ```bash
 kubectl get crd podmonitors.monitoring.coreos.com
@@ -712,12 +750,11 @@ podmonitors.monitoring.coreos.com   2026-05-03T12:05:56Z
 ```
 
 ```bash
-```
 kubectl api-resources --api-group=monitoring.coreos.com | grep -i podmonitor
 podmonitors           pmon         monitoring.coreos.com/v1         true         PodMonitor
 ```
 
-Объект **PodMonitor** в кластере (как и `Provider`/`Alert` из этого же пути, ресурс должен быть в **`flux-system`**; без `metadata.namespace` Flux при применении может выдать ошибку вида `PodMonitor/... namespace not specified`):
+Проверить объект PodMonitor в кластере. Ресурс должен быть в namespace `flux-system` — без `metadata.namespace` Flux при применении выдаст ошибку `PodMonitor/... namespace not specified`:
 
 ```bash
 kubectl get podmonitor -n flux-system
@@ -725,11 +762,7 @@ NAME          AGE
 flux-system   84s
 ```
 
-```bash
-kubectl get podmonitor -n flux-system -o wide
-NAME          AGE
-flux-system   3m25s
-```
+Детали объекта:
 
 ```bash
 kubectl describe podmonitor flux-system -n flux-system
@@ -767,7 +800,7 @@ Spec:
 Events:  <none>
 ```
 
-Локально из корня репозитория — что попадает в сборку kustomize:
+Локально проверить, что PodMonitor попадает в сборку kustomize:
 
 ```bash
 kubectl kustomize apps/flux-resources | grep -E 'kind: PodMonitor|name: flux-system|namespace: flux-system|http-prom'
@@ -790,6 +823,8 @@ notification-controller-6d66bb7797-2rm5f   1/1     Running   0          118m   1
 source-controller-7846484bbc-j88ww         1/1     Running   0          118m   10.112.129.12   cl1lo7src0ijsb1bv4i6-oban   <none>           <none>
 ```
 
+Проверить, что контроллеры暴露ируют порт `http-prom`:
+
 ```bash
 kubectl get pods -n flux-system -l app=source-controller -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{range .spec.containers[*].ports[*]}{.name}{" "}{end}{"\n"}{end}'
 source-controller-7846484bbc-j88ww	http http-prom healthz 
@@ -806,7 +841,8 @@ source-controller-7846484bbc-j88ww	http http-prom healthz
 | `GitRepository` / `Kustomization` не Ready | `flux get sources git -A`, `kubectl describe gitrepository -n flux-system`, сеть и права PAT / deploy key |
 | HelmRelease завис | `flux get helmreleases -A`, логи `helm-controller`, значения в `HelmRelease` |
 | После миграции не применяется `base/` | В `FluxInstance.spec.sync.path` должно быть `./base`, если манифесты лежат под `base/` |
-| Нет метрик оператора | Service `flux-operator`, порт 8080; при необходимости `ServiceMonitor` |
+| Нет метрик Flux-контроллеров | Проверьте, что поды暴露ируют порт `http-prom`; PodMonitor должен быть в `flux-system` и указывать на этот порт |
+| Status Page не открывается | Проверьте Ingress и `web.enabled: true` / `web.config.baseURL` в values HelmRelease оператора |
 
 
 ## Метрики и Grafana
@@ -815,7 +851,7 @@ source-controller-7846484bbc-j88ww	http http-prom healthz
 
 **Веб-доступ:** в этом репозитории для Grafana включён Ingress — [http://grafana.apatsev.org.ru](http://grafana.apatsev.org.ru) (см. [apps/victoria-metrics/helmrelease.yaml](apps/victoria-metrics/helmrelease.yaml)).
 
-Пароль администратора Grafana:
+Получить пароль администратора Grafana:
 
 ```bash
 kubectl get secret vmks-grafana -n vmks -o jsonpath='{.data.admin-password}' | base64 --decode; echo
