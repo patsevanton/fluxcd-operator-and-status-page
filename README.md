@@ -817,3 +817,27 @@ kubectl get secret vmks-grafana -n vmks -o jsonpath='{.data.admin-password}' | b
 - Через [Grafana Dashboard ID 16714 (Flux2)](https://grafana.com/grafana/dashboards/16714-flux2/).
 
 Если метрики Flux уже собираются (через `ServiceMonitor`), дашборды начнут показывать данные сразу после импорта.
+
+### Скриншоты Grafana
+
+#### Flux2 Dashboard
+
+![Grafana — Flux2 Dashboard (section 1)](screenshots/Dashboard_flux2_head.png)
+
+![Grafana — Flux2 Dashboard (section 2)](screenshots/Dashboard_flux2_tail.png)
+
+#### Flux Cluster Stats Dashboard
+
+![Grafana — Flux Cluster Stats (section 1)](screenshots/Dashboard_flux_cluster_stats_head.png)
+
+![Grafana — Flux Cluster Stats (section 2)](screenshots/Dashboard_flux_cluster_stats_tail.png)
+
+#### Flux Control Plane Dashboard
+
+![Grafana — Flux Control Plane (section 1)](screenshots/Dashboard_flux_control_plane_head.png)
+
+![Grafana — Flux Control Plane (section 2)](screenshots/Dashboard_flux_control_plane_middle.png)
+
+![Grafana — Flux Control Plane (section 3)](screenshots/Dashboard_flux_control_plane_middle_tail.png)
+
+![Grafana — Flux Control Plane (section 4)](screenshots/Dashboard_flux_control_plane_tail.png)
