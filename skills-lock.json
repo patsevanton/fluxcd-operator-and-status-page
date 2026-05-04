@@ -36,6 +36,11 @@
       "sourceType": "github",
       "computedHash": "407c8185597c99cb6ee29bb62ea3b530621496fb10ba26380fa56586326f173f"
     },
+    "human-writing": {
+      "source": "syahiidkamil/Software-Engineer-AI-Agent-Atlas",
+      "sourceType": "github",
+      "computedHash": "accd1b8dfad39b435f9e2be230aeaed7473cf7c609ca276b0832ba995bab06a3"
+    },
     "shell-check": {
       "source": "controlplaneio-fluxcd/flux-operator",
       "sourceType": "github",
