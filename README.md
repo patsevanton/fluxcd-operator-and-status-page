@@ -853,3 +853,9 @@ JSON: [`dashboard/control-plane.json`](https://github.com/patsevanton/fluxcd-ope
 #### Alertmanager Dashboard
 
 ![Grafana — Alertmanager](screenshots/Dashboard_alertmanager.png)
+
+Каждый новый коммит, который приходит в Flux через `GitRepository`, запускает реконсиляцию привязанных `Kustomization` и `HelmRelease`. Если реконсиляция завершается ошибкой (`ReconciliationFailed`), notification-controller отправляет алерт в Alertmanager с лейблом `revision` — SHA коммита, на котором произошёл сбой. Таким образом, в Alertmanager и Grafana для каждого «плохого» коммита появляется отдельный алерт, и вы сразу видите, какая ревизия привела к сбою.
+
+Чтобы увидеть алерт в Grafana, откройте дашборд Alertmanager и отфильтруйте по `alertname=ReconciliationFailed` — в лейблах каждого алерта будет поле `revision` с указанием конкретного коммита.
+
+> **Примечание:** в конфигурации Alertmanager ([apps/victoria-metrics/helmrelease.yaml](apps/victoria-metrics/helmrelease.yaml)) `revision` не входит в `group_by`, поэтому алерты с разных коммитов на одну и ту же проблему схлопываются в одну группу. Если вам нужен отдельный алерт на каждый коммит, добавьте `revision` в список `group_by`.
