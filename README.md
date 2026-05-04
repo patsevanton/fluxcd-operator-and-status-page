@@ -834,5 +834,3 @@ JSON: [`dashboard/control-plane.json`](https://github.com/patsevanton/fluxcd-ope
 ![Grafana — Alertmanager](screenshots/Dashboard_alertmanager.png)
 
 Каждый новый коммит, который приходит в Flux через `GitRepository`, запускает реконсиляцию привязанных `Kustomization` и `HelmRelease`. Если реконсиляция завершается ошибкой (`ReconciliationFailed`), notification-controller отправляет алерт в Alertmanager. Таким образом, в Alertmanager и Grafana вы сразу видите, какой ресурс привёл к сбою.
-
-Чтобы увидеть алерт в Grafana, откройте дашборд Alertmanager и отфильтруйте по `alertname=ReconciliationFailed`.
