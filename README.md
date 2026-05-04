@@ -824,17 +824,23 @@ kubectl get secret vmks-grafana -n vmks -o jsonpath='{.data.admin-password}' | b
 
 #### Flux2 Dashboard
 
+JSON: [`dashboard/flux2.json`](https://github.com/patsevanton/fluxcd-operator-and-status-page/blob/main/dashboard/flux2.json)
+
 ![Grafana — Flux2 Dashboard (section 1)](screenshots/Dashboard_flux2_head.png)
 
 ![Grafana — Flux2 Dashboard (section 2)](screenshots/Dashboard_flux2_tail.png)
 
 #### Flux Cluster Stats Dashboard
 
+JSON: [`dashboard/cluster.json`](https://github.com/patsevanton/fluxcd-operator-and-status-page/blob/main/dashboard/cluster.json)
+
 ![Grafana — Flux Cluster Stats (section 1)](screenshots/Dashboard_flux_cluster_stats_head.png)
 
 ![Grafana — Flux Cluster Stats (section 2)](screenshots/Dashboard_flux_cluster_stats_tail.png)
 
 #### Flux Control Plane Dashboard
+
+JSON: [`dashboard/control-plane.json`](https://github.com/patsevanton/fluxcd-operator-and-status-page/blob/main/dashboard/control-plane.json)
 
 ![Grafana — Flux Control Plane (section 1)](screenshots/Dashboard_flux_control_plane_head.png)
 
@@ -843,3 +849,7 @@ kubectl get secret vmks-grafana -n vmks -o jsonpath='{.data.admin-password}' | b
 ![Grafana — Flux Control Plane (section 3)](screenshots/Dashboard_flux_control_plane_middle_tail.png)
 
 ![Grafana — Flux Control Plane (section 4)](screenshots/Dashboard_flux_control_plane_tail.png)
+
+#### Alertmanager Dashboard
+
+![Grafana — Alertmanager](screenshots/Dashboard_alertmanager.png)
