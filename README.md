@@ -813,12 +813,20 @@ kubectl get secret vmks-grafana -n vmks -o jsonpath='{.data.admin-password}' | b
 
 ### Установка FluxCD dashboard в Grafana
 
-Готовые дашборды FluxCD можно добавить в Grafana двумя способами:
+Исходные дашборды взяты из официального репозитория [flux2-monitoring-example](https://github.com/fluxcd/flux2-monitoring-example/tree/main/monitoring/configs/dashboards) и [Grafana Dashboard ID 16714 (Flux2)](https://grafana.com/grafana/dashboards/16714-flux2/), адаптированы и переработаны для корректной работы с Flux 2.8+ и текущим стеком наблюдаемости.
 
-- Через UI Grafana: **Dashboards → Import** и импорт JSON из [flux2-monitoring-example](https://github.com/fluxcd/flux2-monitoring-example/tree/main/monitoring/configs/dashboards).
-- Через [Grafana Dashboard ID 16714 (Flux2)](https://grafana.com/grafana/dashboards/16714-flux2/).
+Готовые JSON-дашборды из этого репозитория можно добавить в Grafana двумя способами:
 
-Если метрики Flux уже собираются (через `ServiceMonitor`), дашборды начнут показывать данные сразу после импорта.
+- Через UI Grafana: **Dashboards → Import** и импорт JSON из директории `dashboard/` этого репозитория.
+- Через прямую загрузку JSON по ссылкам ниже.
+
+Если метрики Flux уже собираются (через `PodMonitor`), дашборды начнут показывать данные сразу после импорта.
+
+| Дашборд | Описание | JSON |
+|---------|----------|------|
+| Flux2 | Основной дашборд для мониторинга ресурсов FluxCD (Kustomization, HelmRelease, GitRepository и др.). Адаптирован для Flux 2.8+: заменён deprecated `gotk_reconcile_condition` на `gotk_resource_info` из kube-state-metrics. | [`dashboard/flux2.json`](https://github.com/patsevanton/fluxcd-operator-and-status-page/blob/main/dashboard/flux2.json) |
+| Flux Cluster Stats | Кластерная статистика Flux: распределение ресурсов по namespace, типам и статусам. | [`dashboard/cluster.json`](https://github.com/patsevanton/fluxcd-operator-and-status-page/blob/main/dashboard/cluster.json) |
+| Flux Control Plane | Метрики control plane Flux: реконсиляции контроллеров, длительность операций, очереди и ошибки. | [`dashboard/control-plane.json`](https://github.com/patsevanton/fluxcd-operator-and-status-page/blob/main/dashboard/control-plane.json) |
 
 ### Скриншоты Grafana
 
